@@ -1,0 +1,204 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="eyebrow">{{ dateLine() }}</div>
+      <h1>{{ greeting() }}, <span class="gradient-text">{{ firstName() }}</span></h1>
+      @if (pulse()) { <span class="badge badge-success live-badge">{{ 'dashboard.synced' | t }}</span> }
+    </div>
+    <div class="header-actions">
+      <app-month-picker [(month)]="month" />
+      <button class="btn btn-ghost" (click)="downloadPdf()" [disabled]="downloading()">
+        @if (downloading()) { <span class="spinner"></span> } @else { ⤓ } PDF
+      </button>
+    </div>
+  </div>
+
+  @if (data(); as d) {
+    <!-- Hero: holographic balance card + pulse metrics -->
+    <div class="grid grid-3">
+      <section class="card hero span-2">
+        <div class="hero-mesh"></div>
+        <div class="hero-content">
+          <div class="hero-main">
+            <div class="eyebrow">{{ 'dashboard.netBalance' | t: { month: monthName() } }}</div>
+            <div class="hero-amount" [class.negative]="d.balance < 0">
+              <span [countUp]="d.balance"></span><small>{{ cur() }}</small>
+            </div>
+            <div class="flows">
+              <div class="flow">
+                <div class="row-between"><span class="muted small">{{ 'dashboard.income' | t }}</span><b class="num"><span [countUp]="d.totalIncome"></span></b></div>
+                <div class="bar"><div class="fill income" [style.width.%]="incomeShare()"></div></div>
+              </div>
+              <div class="flow">
+                <div class="row-between"><span class="muted small">{{ 'dashboard.spent' | t }}</span><b class="num"><span [countUp]="d.totalExpenses"></span></b></div>
+                <div class="bar"><div class="fill expense" [style.width.%]="expenseShare()"></div></div>
+              </div>
+            </div>
+            @if (d.totalIncome === 0) { <a routerLink="/app/income" class="small">{{ 'dashboard.addIncome' | t }}</a> }
+          </div>
+          <div class="hero-ring">
+            <app-ring [value]="d.savingsRate < 0 ? 0 : d.savingsRate" [size]="148">
+              <div>
+                <div class="ring-value num"><span [countUp]="d.savingsRate" [decimals]="1"></span>%</div>
+                <div class="eyebrow ring-label">{{ 'dashboard.saved' | t }}</div>
+              </div>
+            </app-ring>
+            <span class="small muted target">{{ 'dashboard.target' | t }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card pulse-card">
+        <div class="card-header">
+          <h3>{{ 'dashboard.pulse' | t }}</h3>
+          <span class="badge" [class.badge-success]="isCurrentMonth()">{{ (isCurrentMonth() ? 'dashboard.liveMonth' : 'dashboard.closed') | t }}</span>
+        </div>
+        <div class="metric">
+          <span class="muted small">{{ 'dashboard.vsLast' | t }}</span>
+          @if (d.previousMonthExpenses > 0) {
+            <b class="num" [class.text-danger]="d.changePercent > 0" [class.text-success]="d.changePercent <= 0">
+              {{ d.changePercent > 0 ? '▲' : '▼' }} {{ abs(d.changePercent) }}%
+            </b>
+          } @else { <b class="num muted">n/a</b> }
+        </div>
+        <div class="metric">
+          <span class="muted small">{{ 'dashboard.dailyAverage' | t }}</span>
+          <b class="num">{{ d.dailyAverage | money: cur() }}</b>
+        </div>
+        <div class="metric">
+          <span class="muted small">{{ (isCurrentMonth() ? 'dashboard.projected' : 'dashboard.totalSpent') | t }}</span>
+          <b class="num">{{ d.projectedMonthEnd | money: cur() }}</b>
+        </div>
+        <div class="metric goal">
+          <div class="row-between">
+            <span class="muted small">{{ 'dashboard.savingsGoal' | t }}</span>
+            @if (goalProgress() !== null) { <b class="num small">{{ goalProgress()!.toFixed(0) }}%</b> }
+          </div>
+          @if (goalProgress() !== null) {
+            <div class="progress"><div [style.width.%]="goalProgress()" style="background: var(--gradient); color: var(--violet)"></div></div>
+            <span class="dim small">{{ 'common.perMonth' | t: { amount: (d.savingsGoal | money: cur()) } }}</span>
+          } @else {
+            <a routerLink="/app/profile" class="small">{{ 'dashboard.setGoal' | t }}</a>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- Goals -->
+    <section class="card mt">
+      <div class="card-header"><h3>🎯 {{ 'dashboard.goals' | t }}</h3><a routerLink="/app/goals" class="small">{{ 'common.manage' | t }}</a></div>
+      @if (activeGoals().length) {
+        <div class="goals-row">
+          @for (g of activeGoals(); track g.id) {
+            <a class="goal-mini" [routerLink]="['/app/goals', g.id]">
+              <div class="row-between">
+                <b>{{ g.icon }} {{ g.name }}</b>
+                <span class="badge" [class]="'badge badge-' + goalTone(g.status)">{{ 'goals.status.' + g.status | t }}</span>
+              </div>
+              <div class="progress"><div [style.width.%]="g.percent" style="background: var(--gradient); color: var(--violet)"></div></div>
+              <div class="row-between small">
+                <span class="muted">{{ 'goals.savedOf' | t: { saved: (g.savedAmount | money: cur()), target: (g.targetAmount | money: cur()) } }}</span>
+                <b class="num">{{ g.percent | number: '1.0-0' }}%</b>
+              </div>
+              <span class="dim small">{{ 'goals.by' | t: { date: (g.deadline | date2) } }} · {{ 'goals.needed' | t: { amount: (g.requiredPerMonth | money: cur()) } }}</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="emoji">🎯</div><h4>{{ 'dashboard.noGoals' | t }}</h4><p>{{ 'dashboard.noGoalsHint' | t }}</p>
+          <a routerLink="/app/goals" class="btn btn-primary btn-sm mt">{{ 'dashboard.createGoal' | t }}</a>
+        </div>
+      }
+    </section>
+
+    <!-- Charts -->
+    <div class="grid grid-3 mt">
+      <section class="card span-2">
+        <div class="card-header"><div><h3>{{ 'dashboard.cashFlow' | t }}</h3><span class="muted">{{ 'dashboard.last6' | t }}</span></div></div>
+        <app-chart [config]="trendChart()" [height]="300" />
+      </section>
+      <section class="card">
+        <div class="card-header"><h3>{{ 'dashboard.whereItGoes' | t }}</h3><a routerLink="/app/expenses" class="small">{{ 'common.details' | t }}</a></div>
+        @if (d.byCategory.length) {
+          <div class="donut-wrap">
+            <app-chart [config]="categoryChart()" [height]="200" />
+            <div class="donut-center"><span class="eyebrow">{{ 'dashboard.total' | t }}</span><b class="num">{{ d.totalExpenses | money: cur() }}</b></div>
+          </div>
+          <div class="legend">
+            @for (c of d.byCategory.slice(0, 5); track c.categoryId) {
+              <div class="legend-row">
+                <span class="swatch" [style.background]="c.color" [style.box-shadow]="'0 0 10px ' + c.color"></span>
+                <span class="name">{{ c.icon }} {{ c.name | cat }}</span>
+                <span class="num muted">{{ c.percent }}%</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state"><div class="emoji">🌌</div><h4>{{ 'dashboard.noExpenses' | t }}</h4><p>{{ 'dashboard.noExpensesHint' | t }}</p></div>
+        }
+      </section>
+    </div>
+
+    <div class="grid grid-3 mt">
+      <section class="card span-2">
+        <div class="card-header"><div><h3>{{ 'dashboard.velocity' | t }}</h3><span class="muted">{{ 'common.perDay' | t: { amount: (d.dailyAverage | money: cur()) } }}</span></div></div>
+        @if (d.totalExpenses > 0) {
+          <app-chart [config]="dailyChart()" [height]="300" />
+        } @else {
+          <div class="empty-state"><div class="emoji">📈</div><h4>{{ 'dashboard.noSpending' | t }}</h4><p>{{ 'dashboard.noSpendingHint' | t }}</p></div>
+        }
+      </section>
+      <section class="card">
+        <div class="card-header"><h3>{{ 'dashboard.budgets' | t }}</h3><a routerLink="/app/budgets" class="small">{{ 'common.manage' | t }}</a></div>
+        @for (b of d.budgets.slice(0, 5); track b.id) {
+          <div class="budget-row">
+            <div class="row-between">
+              <span class="name">{{ b.category ? b.category.icon + ' ' + (b.category.name | cat) : ('dashboard.overall' | t) }}</span>
+              <b class="num small" [style.color]="budgetColor(b.percent)">{{ b.percent }}%</b>
+            </div>
+            <div class="progress"><div [style.width.%]="b.percent > 100 ? 100 : b.percent" [style.background]="budgetColor(b.percent)" [style.color]="budgetColor(b.percent)"></div></div>
+            <div class="small dim">{{ 'dashboard.spentOf' | t: { spent: (b.spent | money: cur()), limit: (b.limitAmount | money: cur()) } }}</div>
+          </div>
+        } @empty {
+          <div class="empty-state"><div class="emoji">🎯</div><h4>{{ 'dashboard.noBudgets' | t }}</h4><p><a routerLink="/app/budgets">{{ 'dashboard.createFirstBudget' | t }}</a></p></div>
+        }
+      </section>
+    </div>
+
+    <div class="grid grid-3 mt">
+      <section class="card span-2">
+        <div class="card-header"><h3>{{ 'dashboard.latest' | t }}</h3><a routerLink="/app/expenses" class="small">{{ 'common.viewAll' | t }}</a></div>
+        @for (e of d.recent; track e.id) {
+          <div class="tx">
+            <span class="cat-dot" [style.background]="e.category.color + '22'" [style.border-color]="e.category.color + '55'">{{ e.category.icon }}</span>
+            <div class="tx-body"><b>{{ e.description }}</b><span class="dim small">{{ e.category.name | cat }} · {{ e.date | date2 }}</span></div>
+            <b class="num tx-amount">−{{ e.amount | money: cur() }}</b>
+          </div>
+        } @empty {
+          <div class="empty-state"><div class="emoji">🧾</div><h4>{{ 'dashboard.nothing' | t }}</h4><p>{{ 'dashboard.nothingHint' | t }}</p></div>
+        }
+      </section>
+
+      <section class="card ai-card">
+        <div class="ai-glow"></div>
+        <div class="card-header">
+          <h3><span class="gradient-text">{{ 'dashboard.aiInsight' | t }}</span></h3>
+          <button class="icon-btn" [title]="'common.regenerate' | t" (click)="loadInsight(month(), true)" [disabled]="insightLoading()">↻</button>
+        </div>
+        @if (insightLoading()) {
+          <div class="thinking"><div class="orb"></div><span class="muted small">{{ 'advisor.analysing' | t }}</span></div>
+        } @else if (insight()) {
+          <div class="markdown small-md" [innerHTML]="insightTeaser() | markdown"></div>
+          <a routerLink="/app/advisor" class="btn btn-primary btn-sm btn-block">{{ 'dashboard.openAdvisor' | t }}</a>
+        }
+      </section>
+    </div>
+  } @else {
+    <div class="grid grid-3">
+      <div class="card span-2"><div class="skeleton" style="height: 220px"></div></div>
+      <div class="card"><div class="skeleton" style="height: 220px"></div></div>
+    </div>
+    <div class="card mt"><div class="skeleton" style="height: 300px"></div></div>
+  }
+</div>

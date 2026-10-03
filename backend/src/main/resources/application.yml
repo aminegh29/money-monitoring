@@ -1,0 +1,83 @@
+server:
+  port: 8080
+  # Gzip JSON responses (dashboard, lists): noticeably faster on phones over Wi-Fi or mobile data.
+  compression:
+    enabled: true
+    mime-types: application/json,text/plain
+    min-response-size: 1024
+
+spring:
+  application:
+    name: money-monitor
+  datasource:
+    # File-based H2 database: data survives restarts, nothing to install.
+    url: jdbc:h2:file:./data/moneymonitor;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  mail:
+    # Optional: fill these to send real password-reset emails (e.g. Gmail app password).
+    # When host is empty, reset links are printed to the backend console instead.
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+app:
+  frontend-url: http://localhost:4200
+  # Extra origins allowed to call the API (patterns). Covers the iOS/Android apps (Capacitor WebViews)
+  # and the web app opened from a phone on your local network (http://192.168.x.x:4200).
+  allowed-origins:
+    - http://127.0.0.1:4200
+    - capacitor://localhost
+    - https://localhost
+    - http://localhost
+    - http://192.168.*:[*]
+    - http://10.*:[*]
+    - http://172.*:[*]
+  jwt:
+    # Change this in production! Must be at least 32 characters.
+    secret: ${JWT_SECRET:change-me-this-is-a-local-dev-secret-key-please-change-1234567890}
+    expiration-ms: 86400000   # 24 hours
+  admin:
+    email: ${ADMIN_EMAIL:admin@moneymonitor.local}
+    password: ${ADMIN_PASSWORD:Admin@123}
+  ai:
+    # Free options:
+    #   groq   -> free API key at https://console.groq.com/keys   (fast, recommended)
+    #   gemini -> free API key at https://aistudio.google.com/apikey
+    #   ollama -> 100% local & free, install from https://ollama.com then `ollama pull llama3.2`
+    #   none   -> built-in rule-based advisor (works offline, no key)
+    provider: ${AI_PROVIDER:groq}
+    api-key: ${AI_API_KEY:}
+    # Leave base-url / model empty to use the provider defaults.
+    base-url: ${AI_BASE_URL:}
+    model: ${AI_MODEL:}
+    timeout-seconds: 60
+
+logging:
+  level:
+    com.moneymonitor: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://localhost:3306/money_monitor?createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}

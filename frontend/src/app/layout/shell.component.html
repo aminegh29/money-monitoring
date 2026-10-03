@@ -1,0 +1,140 @@
+<div class="shell">
+  <!-- Desktop sidebar -->
+  <aside class="sidebar">
+    <a routerLink="/" class="brand">
+      <app-logo [size]="38" />
+      <span class="brand-name">Money<b class="gradient-text">Monitor</b></span>
+    </a>
+
+    <nav>
+      <div class="nav-group">{{ 'web.nav.finances' | t }}</div>
+      @for (item of financeNav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" class="nav-link"><span class="nav-icon">{{ item.icon }}</span>{{ item.label | t }}</a>
+      }
+      <div class="nav-group">{{ 'web.nav.insights' | t }}</div>
+      @for (item of insightsNav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" class="nav-link"><span class="nav-icon">{{ item.icon }}</span>{{ item.label | t }}</a>
+      }
+      @if (auth.isAdmin()) {
+        <div class="nav-group">{{ 'web.nav.administration' | t }}</div>
+        @for (item of adminNav; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!item.exact }" class="nav-link">
+            <span class="nav-icon">{{ item.icon }}</span>{{ item.label | t }}
+          </a>
+        }
+      }
+      <div class="nav-group">{{ 'web.nav.account' | t }}</div>
+      <a routerLink="/app/notifications" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">🔔</span>{{ 'notifications.title' | t }}
+        @if (unread() > 0) { <span class="nav-count">{{ unread() }}</span> }
+      </a>
+      <a routerLink="/app/profile" routerLinkActive="active" class="nav-link"><span class="nav-icon">⚙️</span>{{ 'web.nav.profile' | t }}</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="avatar">{{ initials() }}</div>
+      <div class="who">
+        <strong>{{ auth.user()?.fullName }}</strong>
+        <span>{{ (auth.isAdmin() ? 'web.nav.administrator' : 'web.nav.personal') | t }}</span>
+      </div>
+      <button class="icon-btn" [title]="'common.signOut' | t" (click)="logout()">⏻</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <a routerLink="/app/dashboard" class="mobile-brand"><app-logo [size]="32" /></a>
+
+      <div class="live" [class.on]="realtime.connected()" [title]="(realtime.connected() ? 'web.nav.liveOn' : 'web.nav.reconnecting') | t">
+        <span class="dot"></span><span class="live-label">{{ (realtime.connected() ? 'common.live' : 'common.offline') | t }}</span>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm desktop-only" (click)="openQuickAdd()"><span>＋</span>{{ 'tabs.addExpense' | t }}</button>
+
+        <app-language-select class="desktop-only" />
+
+        <button class="icon-btn" (click)="toggleTheme()" [title]="(theme.theme() === 'light' ? 'web.nav.darkMode' : 'web.nav.lightMode') | t">
+          {{ theme.theme() === 'light' ? '🌙' : '☀️' }}
+        </button>
+
+        <div class="bell-wrap">
+          <button class="icon-btn bell" (click)="bellOpen.set(!bellOpen())" [attr.aria-label]="'notifications.title' | t">
+            🔔 @if (unread() > 0) { <span class="bell-badge">{{ unread() > 9 ? '9+' : unread() }}</span> }
+          </button>
+          @if (bellOpen()) {
+            <div class="dropdown">
+              <div class="dropdown-header">
+                <strong>{{ 'notifications.title' | t }}</strong>
+                @if (unread() > 0) { <button class="link-btn" (click)="markAllRead()">{{ 'notifications.markAll' | t }}</button> }
+              </div>
+              <div class="dropdown-list">
+                @for (n of notifications().slice(0, 8); track n.id) {
+                  <button class="notif" [class.unread]="!n.read" (click)="openNotification(n)">
+                    <span class="notif-icon">{{ notificationIcon(n) }}</span>
+                    <span class="notif-body">
+                      <strong>{{ n.title }}</strong>
+                      <span>{{ n.message }}</span>
+                      <small>{{ n.createdAt | timeAgo }}</small>
+                    </span>
+                  </button>
+                } @empty {
+                  <div class="empty-state small">{{ 'web.nav.caughtUp' | t }}</div>
+                }
+              </div>
+              <a routerLink="/app/notifications" class="dropdown-footer">{{ 'web.nav.seeAll' | t }}</a>
+            </div>
+          }
+        </div>
+
+        <a routerLink="/app/profile" class="avatar sm" [title]="auth.user()?.email">{{ initials() }}</a>
+      </div>
+    </header>
+
+    <main>
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Mobile bottom navigation (phones + iOS/Android apps) -->
+  <nav class="tabbar" aria-label="Main">
+    <a routerLink="/app/dashboard" routerLinkActive="active" class="tab" (click)="tap()"><span class="tab-icon">◈</span><span>{{ 'tabs.home' | t }}</span></a>
+    <a routerLink="/app/expenses" routerLinkActive="active" class="tab" (click)="tap()"><span class="tab-icon">⇅</span><span>{{ 'tabs.expenses' | t }}</span></a>
+    <button class="fab" (click)="openQuickAdd()" [attr.aria-label]="'tabs.addExpense' | t"><span>＋</span></button>
+    <a routerLink="/app/advisor" routerLinkActive="active" class="tab" (click)="tap()"><span class="tab-icon">✦</span><span>{{ 'tabs.ai' | t }}</span></a>
+    <button class="tab" [class.active]="moreOpen()" (click)="moreOpen.set(true); tap()">
+      <span class="tab-icon">⋯</span><span>{{ 'tabs.more' | t }}</span>
+      @if (unread() > 0) { <i class="tab-dot"></i> }
+    </button>
+  </nav>
+</div>
+
+<!-- "More" bottom sheet -->
+@if (moreOpen()) {
+  <div class="sheet-backdrop" (click)="moreOpen.set(false)">
+    <div class="sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-user">
+        <div class="avatar">{{ initials() }}</div>
+        <div><strong>{{ auth.user()?.fullName }}</strong><span class="muted small">{{ auth.user()?.email }}</span></div>
+      </div>
+      <div class="sheet-grid">
+        @for (item of moreNav(); track item.path) {
+          <a [routerLink]="item.path" class="sheet-item" (click)="moreOpen.set(false)">
+            <span class="sheet-icon">{{ item.icon }}</span>{{ item.label | t }}
+            @if (item.path === '/app/notifications' && unread() > 0) { <span class="nav-count">{{ unread() }}</span> }
+          </a>
+        }
+      </div>
+      <div class="sheet-actions">
+        <app-language-select />
+        <button class="btn btn-ghost" (click)="toggleTheme()">{{ theme.theme() === 'light' ? '🌙' : '☀️' }} {{ (theme.theme() === 'light' ? 'web.nav.darkMode' : 'web.nav.lightMode') | t }}</button>
+        <button class="btn btn-ghost" (click)="logout()">⏻ {{ 'common.signOut' | t }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (quickAdd()) {
+  <app-expense-form (closed)="quickAdd.set(false)" />
+}

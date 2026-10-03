@@ -1,0 +1,29 @@
+# Backend
+backend/target/
+backend/data/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+
+# Capacitor native build outputs
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/ios/App/Pods/
+frontend/ios/App/build/
+*.apk
+
+# Database backups
+backend/data-backup-*/
