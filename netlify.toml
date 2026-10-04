@@ -1,0 +1,14 @@
+# Netlify: hosts the Angular web app. Set the API_URL environment variable to the Render backend address.
+[build]
+  base = "frontend"
+  command = "node scripts/set-api-url.mjs && npm run build"
+  publish = "dist/frontend/browser"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Single-page app: every path (/app/dashboard, /login…) serves index.html and Angular routes it.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

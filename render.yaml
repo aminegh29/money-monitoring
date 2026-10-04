@@ -1,0 +1,27 @@
+# Render blueprint for the backend: New > Blueprint > pick this repository.
+# Values marked "sync: false" are asked for in the Render dashboard (they are secrets or not known yet).
+services:
+  - type: web
+    name: money-monitor-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: DB_URL
+        sync: false # jdbc:postgresql://<neon host>/<database>?sslmode=require
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: APP_FRONTEND_URL
+        sync: false # https://<your site>.netlify.app
+      - key: AI_PROVIDER
+        value: groq
+      - key: AI_API_KEY
+        sync: false # optional: free key from https://console.groq.com/keys

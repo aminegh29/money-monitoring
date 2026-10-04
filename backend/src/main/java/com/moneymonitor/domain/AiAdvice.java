@@ -26,8 +26,8 @@ public class AiAdvice {
     @Column(name = "period_key", nullable = false, length = 7)
     private String period;
 
-    @Lob
-    @Column(nullable = false)
+    // Plain text column: @Lob would become a PostgreSQL large object (oid), which breaks outside transactions.
+    @Column(nullable = false, columnDefinition = "text")
     private String content;
 
     /** Which engine produced it, e.g. "groq:llama-3.3-70b-versatile" or "rules". */

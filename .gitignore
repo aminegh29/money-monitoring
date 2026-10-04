@@ -27,3 +27,6 @@ frontend/ios/App/build/
 
 # Database backups
 backend/data-backup-*/
+
+# Large media, kept out of GitHub
+promo-video/
