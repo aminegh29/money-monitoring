@@ -20,7 +20,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-/** Seeds default categories, the admin account and (optionally) a demo user with realistic data. */
+/**
+ * Seeds default categories and the admin account. A demo user with sample data is only created when SEED_DEMO=true
+ * (off by default: there are no demo accounts on the real site).
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -34,7 +37,7 @@ public class DataInitializer implements ApplicationRunner {
     private final PasswordEncoder passwordEncoder;
     private final AppProperties props;
 
-    @Value("${app.seed-demo:true}")
+    @Value("${app.seed-demo:false}")
     private boolean seedDemo;
 
     private record Default(String name, String icon, String color, boolean essential) {}
@@ -71,8 +74,9 @@ public class DataInitializer implements ApplicationRunner {
                     .email(adminEmail)
                     .password(passwordEncoder.encode(props.admin().password()))
                     .role(Role.ADMIN)
+                    .emailVerified(true)
                     .build());
-            log.info("Created admin account: {} / {}", adminEmail, props.admin().password());
+            log.info("Created admin account: {}", adminEmail); // never log the password
         }
 
         if (seedDemo && !userRepository.existsByEmailIgnoreCase("demo@moneymonitor.local")) {
@@ -89,6 +93,7 @@ public class DataInitializer implements ApplicationRunner {
                 .currency("MAD")
                 .monthlyIncome(new BigDecimal("14500"))
                 .savingsGoal(new BigDecimal("2500"))
+                .emailVerified(true)
                 .build());
 
         Map<String, Category> cats = categoryRepository.findByOwnerIsNull().stream()

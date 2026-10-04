@@ -19,7 +19,9 @@ interface AuthValue {
   currency: string;
   logoutReason: LogoutReason | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (body: { fullName: string; email: string; password: string; currency: string; language: string }) => Promise<void>;
+  /** Resolves to true when the account must first be confirmed with the emailed code. */
+  register: (body: { fullName: string; email: string; password: string; currency: string; language: string }) => Promise<boolean>;
+  verifyEmail: (email: string, code: string) => Promise<void>;
   setUser: (user: User) => void;
   refreshMe: () => void;
   logout: (reason?: LogoutReason) => void;
@@ -90,11 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const startSession = useCallback(
     async (r: AuthResponse) => {
-      configureClient(r.token, () => logout('expired'));
-      await SecureStore.setItemAsync(TOKEN_KEY, r.token).catch(() => {});
+      const token = r.token;
+      if (!token) throw new Error('No session token');
+      configureClient(token, () => logout('expired'));
+      await SecureStore.setItemAsync(TOKEN_KEY, token).catch(() => {});
       setLogoutReason(null);
       setUser(r.user);
-      setToken(r.token);
+      setToken(token);
     },
     [logout, setUser],
   );
@@ -129,7 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currency: user?.currency ?? 'MAD',
       logoutReason,
       login: async (email, password) => startSession(await api.login(email, password)),
-      register: async (body) => startSession(await api.register(body)),
+      register: async (body) => {
+        const r = await api.register(body);
+        if (r.verificationRequired || !r.token) return true;
+        await startSession(r);
+        return false;
+      },
+      verifyEmail: async (email, code) => startSession(await api.verifyEmail(email, code)),
       setUser,
       refreshMe,
       logout,

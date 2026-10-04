@@ -31,6 +31,13 @@ public class ProfileController {
         return authService.setLanguage(me.id(), req.language());
     }
 
+    /** Deletes the signed-in user's account and all their data (password required). */
+    @PostMapping("/delete")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void deleteAccount(@AuthenticationPrincipal UserPrincipal me, @Valid @RequestBody DeleteAccountRequest req) {
+        authService.deleteOwnAccount(me.id(), req);
+    }
+
     @PostMapping("/password")
     public MessageResponse changePassword(@AuthenticationPrincipal UserPrincipal me, @Valid @RequestBody ChangePasswordRequest req) {
         authService.changePassword(me.id(), req);

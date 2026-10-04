@@ -52,8 +52,22 @@ public class User {
     @Column(length = 5)
     private String language = "en";
 
+    /** False until the email code is confirmed. Null for accounts created before verification existed (treated as verified). */
+    private Boolean emailVerified;
+
+    /** Receive notifications by email too. Null (older accounts) means yes. */
+    private Boolean emailNotifications;
+
     @Builder.Default
     private Instant createdAt = Instant.now();
 
     private Instant lastLoginAt;
+
+    public boolean isEmailVerified() {
+        return !Boolean.FALSE.equals(emailVerified);
+    }
+
+    public boolean wantsEmailNotifications() {
+        return !Boolean.FALSE.equals(emailNotifications);
+    }
 }

@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { errorMessage } from '@/api/client';
@@ -42,7 +42,12 @@ export default function RegisterScreen() {
     setError('');
     try {
       // The language picked on the sign-in screens becomes the account language.
-      await register({ fullName: fullName.trim(), email: email.trim(), password, currency, language: lang });
+      const needsCode = await register({ fullName: fullName.trim(), email: email.trim(), password, currency, language: lang });
+      if (needsCode) {
+        router.push({ pathname: '/verify-email', params: { email: email.trim() } });
+        setLoading(false);
+        return;
+      }
       toast.success(t('auth.welcomeToast'), t('auth.welcomeToastMsg'));
     } catch (err) {
       setError(errorMessage(err));

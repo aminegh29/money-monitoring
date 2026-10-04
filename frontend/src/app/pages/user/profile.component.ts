@@ -6,11 +6,12 @@ import { AuthService } from '../../core/auth.service';
 import { CURRENCIES } from '../../core/models';
 import { I18nService, LANGUAGES, t, TranslatePipe } from '../../core/i18n';
 import { ThemeService, ToastService } from '../../core/ui.service';
+import { ConfirmComponent } from '../../shared/modal.component';
 import { passwordsMatch } from '../public/register.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, ConfirmComponent],
   template: `
     <div class="page narrow">
       <div class="page-header">
@@ -53,6 +54,10 @@ import { passwordsMatch } from '../public/register.component';
                 <input class="input" type="number" min="0" step="0.01" formControlName="savingsGoal" />
               </div>
             </div>
+            <label class="checkbox notif">
+              <input type="checkbox" formControlName="emailNotifications" />
+              <span><b>{{ 'profile.emailNotifs' | t }}</b><br /><small class="muted">{{ 'profile.emailNotifsHint' | t: { email: auth.user()?.email ?? '' } }}</small></span>
+            </label>
             <button class="btn btn-primary" [disabled]="profile.invalid || savingProfile()">{{ 'web.profile.saveChanges' | t }}</button>
           </form>
         </div>
@@ -101,7 +106,26 @@ import { passwordsMatch } from '../public/register.component';
           </div>
         </div>
       </div>
+
+      @if (!auth.isAdmin()) {
+        <div class="card danger-zone mt">
+          <div class="card-header"><h3>{{ 'profile.dangerZone' | t }}</h3></div>
+          <p class="muted small">{{ 'profile.deleteAccountHint' | t }}</p>
+          <div class="danger-row">
+            <input class="input" type="password" [value]="deletePassword()" (input)="deletePassword.set($any($event.target).value)"
+                   [placeholder]="'profile.current' | t" autocomplete="current-password" />
+            <button class="btn btn-danger" [disabled]="!deletePassword() || deleting()" (click)="confirmDelete.set(true)">
+              @if (deleting()) { <span class="spinner"></span> } {{ 'profile.deleteAccount' | t }}
+            </button>
+          </div>
+        </div>
+      }
     </div>
+
+    @if (confirmDelete()) {
+      <app-confirm [title]="'profile.deleteConfirmTitle' | t" [message]="'profile.deleteConfirmMsg' | t" [confirmLabel]="'profile.deleteAccount' | t"
+                   (confirm)="deleteAccount()" (cancel)="confirmDelete.set(false)" />
+    }
   `,
   styles: [`
     .narrow { max-width: 1060px; }
@@ -117,6 +141,12 @@ import { passwordsMatch } from '../public/register.component';
     .toggle.on { background: var(--primary); }
     .toggle.on span { transform: translateX(20px); }
     :host-context([dir='rtl']) .toggle.on span { transform: translateX(-20px); }
+    .notif { align-items: flex-start; margin: 4px 0 18px; font-size: 14px; }
+    .notif small { line-height: 1.5; }
+    .danger-zone { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+    .danger-zone h3 { color: var(--danger); }
+    .danger-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .danger-row .input { flex: 1; min-width: 200px; }
   `],
 })
 export class ProfileComponent {
@@ -136,7 +166,12 @@ export class ProfileComponent {
     currency: [this.auth.user()?.currency ?? 'MAD', Validators.required],
     monthlyIncome: [this.auth.user()?.monthlyIncome ?? 0, [Validators.required, Validators.min(0)]],
     savingsGoal: [this.auth.user()?.savingsGoal ?? 0, [Validators.required, Validators.min(0)]],
+    emailNotifications: [this.auth.user()?.emailNotifications ?? true],
   });
+
+  readonly deletePassword = signal('');
+  readonly deleting = signal(false);
+  readonly confirmDelete = signal(false);
 
   readonly password = this.fb.nonNullable.group(
     {
@@ -163,6 +198,21 @@ export class ProfileComponent {
       error: (err) => {
         this.toast.error(t('profile.saveError'), errorMessage(err));
         this.savingProfile.set(false);
+      },
+    });
+  }
+
+  deleteAccount() {
+    this.confirmDelete.set(false);
+    this.deleting.set(true);
+    this.api.deleteAccount(this.deletePassword()).subscribe({
+      next: () => {
+        this.toast.success(t('profile.deleted'));
+        this.auth.logout();
+      },
+      error: (err) => {
+        this.toast.error(t('common.couldNotDelete'), errorMessage(err));
+        this.deleting.set(false);
       },
     });
   }

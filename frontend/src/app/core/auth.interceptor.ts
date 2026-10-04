@@ -27,6 +27,7 @@ export function errorMessage(err: unknown, fallback?: string): string {
   const otherwise = fallback ?? t('common.somethingWrong');
   if (err instanceof HttpErrorResponse) {
     if (err.status === 0) return t('errors.cannotReach', { url: serverUrl() });
+    if (err.status === 429) return t('errors.tooMany');
     return err.error?.message ?? otherwise;
   }
   return otherwise;

@@ -22,13 +22,16 @@ export interface User {
   monthlyIncome: number;
   savingsGoal: number;
   language: string;
+  emailNotifications: boolean;
   createdAt: string;
   lastLoginAt: string | null;
 }
 
+/** token is null after sign-up while the email still needs its 6-digit code. */
 export interface AuthResponse {
-  token: string;
+  token: string | null;
   user: User;
+  verificationRequired?: boolean;
 }
 
 export interface Category {

@@ -71,7 +71,7 @@ export function passwordScore(p: string): number {
 
         <label class="checkbox terms">
           <input type="checkbox" formControlName="terms" />
-          <span>{{ 'auth.terms' | t }}</span>
+          <span>{{ 'auth.terms' | t }} <a routerLink="/terms" target="_blank">{{ 'web.landing.terms' | t }}</a> · <a routerLink="/privacy" target="_blank">{{ 'web.landing.privacy' | t }}</a></span>
         </label>
         @if (submitted && !form.value.terms) { <p class="field-error">{{ 'auth.acceptTerms' | t }}</p> }
 
@@ -134,8 +134,12 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set('');
     const { fullName, email, password, currency } = this.form.getRawValue();
-    this.auth.register({ fullName, email, password, currency }).subscribe({
-      next: () => {
+    this.auth.register({ fullName: fullName.trim(), email: email.trim(), password, currency }).subscribe({
+      next: (r) => {
+        if (!r.token) {
+          this.router.navigate(['/verify-email'], { queryParams: { email: email.trim() } });
+          return;
+        }
         this.toast.success(t('auth.welcomeToast'), t('auth.welcomeToastMsg'));
         this.router.navigateByUrl('/app/dashboard');
       },

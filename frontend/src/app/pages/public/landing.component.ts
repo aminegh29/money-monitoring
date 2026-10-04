@@ -12,6 +12,11 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
   template: `
     <header class="nav">
       <a routerLink="/" class="brand"><app-logo [size]="38" /><span>Money<b class="gradient-text">Monitor</b></span></a>
+      <nav class="nav-links">
+        <button type="button" (click)="scrollTo('features')">{{ 'web.landing.featuresEyebrow' | t }}</button>
+        <button type="button" (click)="scrollTo('security')">{{ 'web.landing.securityEyebrow' | t }}</button>
+        <button type="button" (click)="scrollTo('faq')">{{ 'web.landing.faqEyebrow' | t }}</button>
+      </nav>
       <div class="nav-actions">
         <app-language-select />
         <button class="icon-btn" (click)="theme.toggle()">{{ theme.theme() === 'light' ? '🌙' : '☀️' }}</button>
@@ -31,7 +36,11 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
         <p>{{ 'web.landing.lead' | t }}</p>
         <div class="cta">
           <a routerLink="/register" class="btn btn-primary btn-lg">{{ 'web.landing.launch' | t }}</a>
-          <a routerLink="/login" class="btn btn-ghost btn-lg">{{ 'web.landing.tryDemo' | t }}</a>
+          @if (auth.isLoggedIn()) {
+            <a [routerLink]="auth.homeRoute()" class="btn btn-ghost btn-lg">{{ 'web.landing.openDashboard' | t }}</a>
+          } @else {
+            <a routerLink="/login" class="btn btn-ghost btn-lg">{{ 'auth.signIn' | t }}</a>
+          }
         </div>
         <div class="stats">
           <div><b class="gradient-text">⚡ 0s</b><span>{{ 'web.landing.statSync' | t }}</span></div>
@@ -67,7 +76,7 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       <span>{{ 'web.landing.availableOn' | t }}</span><b>🌐 Web</b><b>📱 iOS</b><b>🤖 Android</b><span class="muted">{{ 'web.landing.synced' | t }}</span>
     </section>
 
-    <section class="features">
+    <section class="features" id="features">
       <div class="eyebrow center">{{ 'web.landing.featuresEyebrow' | t }}</div>
       <h2>{{ 'web.landing.featuresTitle' | t }}</h2>
       <div class="grid grid-3">
@@ -91,6 +100,35 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       </div>
     </section>
 
+    <section class="security" id="security">
+      <div class="eyebrow center">{{ 'web.landing.securityEyebrow' | t }}</div>
+      <h2>{{ 'web.landing.securityTitle' | t }}</h2>
+      <div class="grid grid-3">
+        @for (s of security; track s.key) {
+          <div class="card sec">
+            <div class="sec-icon">{{ s.icon }}</div>
+            <div>
+              <h3>{{ 'web.landing.' + s.key + 't' | t }}</h3>
+              <p class="muted">{{ 'web.landing.' + s.key + 'd' | t }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="faq" id="faq">
+      <div class="eyebrow center">{{ 'web.landing.faqEyebrow' | t }}</div>
+      <h2>{{ 'web.landing.faqTitle' | t }}</h2>
+      <div class="faq-list">
+        @for (q of faq; track q) {
+          <details class="card">
+            <summary>{{ 'web.landing.q' + q | t }}</summary>
+            <p class="muted">{{ 'web.landing.a' + q | t }}</p>
+          </details>
+        }
+      </div>
+    </section>
+
     <section class="final-cta">
       <div class="final-glow"></div>
       <h2>{{ 'web.landing.finalTitle' | t }}</h2>
@@ -98,7 +136,27 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       <a routerLink="/register" class="btn btn-lg cta-white">{{ 'web.landing.finalCta' | t }}</a>
     </section>
 
-    <footer class="dim small">© {{ year }} Money Monitor · Spring Boot · Angular · Capacitor</footer>
+    <footer class="site-footer">
+      <div class="f-grid">
+        <div class="f-brand">
+          <a routerLink="/" class="brand"><app-logo [size]="32" /><span>Money<b class="gradient-text">Monitor</b></span></a>
+          <p class="muted small">{{ 'web.landing.footerTagline' | t }}</p>
+        </div>
+        <div class="f-col">
+          <h4>{{ 'web.landing.footerProduct' | t }}</h4>
+          <button type="button" (click)="scrollTo('features')">{{ 'web.landing.featuresEyebrow' | t }}</button>
+          <button type="button" (click)="scrollTo('security')">{{ 'web.landing.securityEyebrow' | t }}</button>
+          <button type="button" (click)="scrollTo('faq')">{{ 'web.landing.faqEyebrow' | t }}</button>
+          <a routerLink="/register">{{ 'web.landing.getStarted' | t }}</a>
+        </div>
+        <div class="f-col">
+          <h4>{{ 'web.landing.footerLegal' | t }}</h4>
+          <a routerLink="/privacy">{{ 'web.landing.privacy' | t }}</a>
+          <a routerLink="/terms">{{ 'web.landing.terms' | t }}</a>
+        </div>
+      </div>
+      <div class="f-bottom dim small">{{ 'web.landing.rights' | t: { year: year } }}</div>
+    </footer>
   `,
   styles: [`
     :host { display: block; overflow-x: hidden; }
@@ -168,9 +226,34 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
     .final-cta h2 { margin-bottom: 12px; }
     .final-cta p { color: var(--text-muted); margin-bottom: 30px; font-size: 17px; }
     .cta-white { background: #fff; color: #1e1b4b; border: none; box-shadow: 0 0 40px rgba(255,255,255,.35); }
-    footer { text-align: center; padding: 10px 0 calc(40px + var(--safe-bottom)); }
+
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links button { background: none; border: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-muted); padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+    .nav-links button:hover { color: var(--text); background: var(--surface-2); }
+
+    .security, .faq { padding: 90px 6vw 20px; max-width: 1300px; margin: 0 auto; }
+    .sec { display: flex; gap: 16px; align-items: flex-start; }
+    .sec-icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 21px; background: var(--success-soft); border: 1px solid var(--border-strong); }
+    .sec h3 { font-size: 17px; margin-bottom: 6px; }
+    .faq-list { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
+    .faq details { padding: 0; }
+    .faq summary { list-style: none; cursor: pointer; padding: 20px 24px; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: '+'; font-size: 22px; font-weight: 400; color: var(--primary-text); transition: transform .2s; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details p { padding: 0 24px 20px; line-height: 1.65; }
+
+    .site-footer { border-top: 1px solid var(--border); background: var(--surface); padding: 50px 6vw calc(30px + var(--safe-bottom)); }
+    .f-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; max-width: 1300px; margin: 0 auto; }
+    .f-brand p { margin-top: 14px; max-width: 340px; line-height: 1.6; }
+    .f-col { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .f-col h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: 4px; }
+    .f-col a, .f-col button { background: none; border: 0; padding: 0; font: inherit; font-size: 14px; color: var(--text); cursor: pointer; }
+    .f-col a:hover, .f-col button:hover { color: var(--primary-text); text-decoration: none; }
+    .f-bottom { max-width: 1300px; margin: 36px auto 0; padding-top: 22px; border-top: 1px solid var(--border); text-align: center; }
 
     @media (max-width: 1000px) {
+      .nav-links { display: none; }
       .hero { grid-template-columns: 1fr; padding-top: 40px; }
       .hero-visual { height: 560px; }
     }
@@ -180,7 +263,10 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       .hero-visual { height: 520px; transform: scale(.85); }
       .o1 { width: 380px; height: 380px; } .o2 { width: 300px; height: 300px; }
       .chip { display: none; }
-      .features, .steps { padding: 60px 16px 10px; }
+      .features, .steps, .security, .faq { padding: 60px 16px 10px; }
+      .f-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+      .f-brand { grid-column: 1 / -1; }
+      .site-footer { padding-inline: 16px; }
       .final-cta { margin: 60px 16px 40px; padding: 50px 20px; }
     }
   `],
@@ -204,4 +290,14 @@ export class LandingComponent {
     { n: '02', key: 's2' },
     { n: '03', key: 's3' },
   ];
+  readonly security = [
+    { icon: '🔒', key: 'sec1' },
+    { icon: '🏦', key: 'sec2' },
+    { icon: '🗑️', key: 'sec3' },
+  ];
+  readonly faq = [1, 2, 3, 4, 5];
+
+  scrollTo(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }

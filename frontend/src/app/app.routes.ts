@@ -8,6 +8,9 @@ export const routes: Routes = [
   { path: 'register', canActivate: [guestGuard], loadComponent: () => import('./pages/public/register.component').then((m) => m.RegisterComponent), title: 'auth.createBtn' },
   { path: 'forgot-password', canActivate: [guestGuard], loadComponent: () => import('./pages/public/forgot-password.component').then((m) => m.ForgotPasswordComponent), title: 'auth.forgotTitle' },
   { path: 'reset-password', loadComponent: () => import('./pages/public/reset-password.component').then((m) => m.ResetPasswordComponent), title: 'auth.resetTitle' },
+  { path: 'verify-email', canActivate: [guestGuard], loadComponent: () => import('./pages/public/verify-email.component').then((m) => m.VerifyEmailComponent), title: 'auth.verifyTitle' },
+  { path: 'privacy', loadComponent: () => import('./pages/public/legal.component').then((m) => m.LegalComponent), data: { page: 'privacy' }, title: 'web.legal.privacyTitle' },
+  { path: 'terms', loadComponent: () => import('./pages/public/legal.component').then((m) => m.LegalComponent), data: { page: 'terms' }, title: 'web.legal.termsTitle' },
   {
     path: 'app',
     canActivate: [authGuard],

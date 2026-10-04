@@ -36,6 +36,7 @@ public class AdminService {
     private final GoalRepository goalRepository;
     private final GoalDepositRepository depositRepository;
     private final Texts texts;
+    private final AccountDeletionService accountDeletion;
     private final PasswordResetTokenRepository tokenRepository;
     private final NotificationService notificationService;
     private final RealtimeService realtime;
@@ -109,21 +110,8 @@ public class AdminService {
         if (adminId.equals(userId)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "You can't delete your own account");
         }
-        User user = get(userId);
-        String email = user.getEmail();
-        notificationRepository.deleteByUserId(userId);
-        adviceRepository.deleteByUserId(userId);
-        insightRepository.deleteByUserId(userId);
-        depositRepository.deleteByUserId(userId);
-        goalRepository.deleteByUserId(userId);
-        tokenRepository.deleteByUserId(userId);
-        budgetRepository.deleteByUserId(userId);
-        expenseRepository.deleteByUserId(userId);
-        incomeRepository.deleteByUserId(userId);
-        categoryRepository.deleteByOwnerId(userId);
-        userRepository.delete(user);
-        realtime.toUser(email, RealtimeService.EventType.ACCOUNT_DISABLED, null);
-        realtime.toAdmins("User " + email + " deleted");
+        accountDeletion.delete(get(userId));
+
     }
 
     private User get(Long id) {

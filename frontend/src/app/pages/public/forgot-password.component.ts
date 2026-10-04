@@ -16,7 +16,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
           <div class="emoji">📬</div>
           <h3>{{ 'web.forgot.checkInbox' | t }}</h3>
           <p class="muted">{{ 'web.forgot.sentTo' | t: { email: form.value.email ?? '' } }}</p>
-          <p class="muted small hint">{{ 'web.forgot.consoleHint' | t }}</p>
+          <p class="muted small hint">{{ 'auth.spamHint' | t }}</p>
           <button class="btn btn-ghost btn-block" (click)="sent.set(false)">{{ 'web.forgot.another' | t }}</button>
         </div>
       } @else {

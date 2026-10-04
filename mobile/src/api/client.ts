@@ -1,11 +1,12 @@
 import { apiUrl, serverUrl } from '@/config/server';
 import { t } from '@/i18n';
 
-/** An HTTP error from the API. status 0 means the server could not be reached. */
+/** An HTTP error from the API. status 0 means the server could not be reached; code is set for errors the app reacts to. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    readonly code?: string,
   ) {
     super(message);
   }
@@ -54,10 +55,14 @@ export async function request<T>(method: string, path: string, opts: { params?: 
     // Expired/invalid session (not a failed login attempt): send the user back to sign in.
     if (res.status === 401 && token && !path.startsWith('/auth/login')) onUnauthorized?.();
     let message = '';
+    let code: string | undefined;
     try {
-      message = (await res.json())?.message ?? '';
+      const body = await res.json();
+      message = body?.message ?? '';
+      code = body?.code ?? undefined;
     } catch {}
-    throw new ApiError(res.status, message || defaultMessage(res.status));
+    if (res.status === 429) message = t('errors.tooMany');
+    throw new ApiError(res.status, message || defaultMessage(res.status), code);
   }
 
   if (res.status === 204) return undefined as T;

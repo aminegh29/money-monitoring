@@ -1,7 +1,7 @@
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
-import { errorMessage } from '@/api/client';
+import { ApiError, errorMessage } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
 import { AuthShell } from '@/components/AuthShell';
 import { Button, Input, Notice, Row, Txt } from '@/components/ui';
@@ -31,14 +31,14 @@ export default function LoginScreen() {
     try {
       await login(email.trim(), password);
     } catch (err) {
-      setError(errorMessage(err, t('errors.invalidLogin')));
       setLoading(false);
+      if (err instanceof ApiError && err.code === 'EMAIL_NOT_VERIFIED') {
+        // Right password, email not confirmed yet: a fresh code was just emailed.
+        router.push({ pathname: '/verify-email', params: { email: email.trim(), notice: 'notVerified' } });
+        return;
+      }
+      setError(errorMessage(err, t('errors.invalidLogin')));
     }
-  };
-
-  const fill = (e: string, p: string) => {
-    setEmail(e);
-    setPassword(p);
   };
 
   return (
@@ -93,13 +93,6 @@ export default function LoginScreen() {
         </Link>
       </Row>
 
-      <View style={{ marginTop: 26, paddingTop: 18, borderTopWidth: 1, borderStyle: 'dashed', borderColor: colors.border, gap: 10, alignItems: 'center' }}>
-        <Txt variant="small">{t('auth.tryInstantly')}</Txt>
-        <Row>
-          <Button title={t('auth.demoUser')} icon="👤" variant="ghost" size="sm" onPress={() => fill('demo@moneymonitor.local', 'Demo@123')} />
-          <Button title={t('auth.admin')} icon="🛡️" variant="ghost" size="sm" onPress={() => fill('admin@moneymonitor.local', 'Admin@123')} />
-        </Row>
-      </View>
     </AuthShell>
   );
 }

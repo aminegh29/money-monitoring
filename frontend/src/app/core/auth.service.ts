@@ -55,11 +55,23 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${apiUrl()}/auth/login`, { email, password }).pipe(tap((r) => this.setSession(r)));
   }
 
-  /** The language chosen before signing up becomes the account language. */
+  /**
+   * The language chosen before signing up becomes the account language.
+   * When the server asks for email verification no session is started (no token yet).
+   */
   register(body: { fullName: string; email: string; password: string; currency: string }) {
     return this.http
       .post<AuthResponse>(`${apiUrl()}/auth/register`, { ...body, language: currentLang() })
-      .pipe(tap((r) => this.setSession(r)));
+      .pipe(tap((r) => { if (r.token) this.setSession(r); }));
+  }
+
+  /** Checks the 6-digit code; on success the account is active and the user is signed in. */
+  verifyEmail(email: string, code: string) {
+    return this.http.post<AuthResponse>(`${apiUrl()}/auth/verify-email`, { email, code }).pipe(tap((r) => this.setSession(r)));
+  }
+
+  resendVerification(email: string) {
+    return this.http.post<{ message: string }>(`${apiUrl()}/auth/resend-verification`, { email });
   }
 
   forgotPassword(email: string) {
@@ -105,6 +117,7 @@ export class AuthService {
   }
 
   private setSession(r: AuthResponse) {
+    if (!r.token) return;
     this.token.set(r.token);
     try {
       localStorage.setItem(TOKEN_KEY, r.token);

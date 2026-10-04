@@ -1,4 +1,5 @@
-// English texts. Every other language file must have exactly the same keys (TypeScript checks it).
+// English texts shared by the Expo app and the web app (frontend/src/app/i18n is a copy of this folder).
+// Every other language file must have exactly the same keys (TypeScript checks it). Web-only texts are in web-*.ts.
 // Placeholders look like {name} and are filled by t('key', { name: '…' }).
 
 const en = {
@@ -38,6 +39,7 @@ const en = {
     language: 'Language',
   },
   errors: {
+    tooMany: 'Too many attempts. Please wait a few minutes and try again.',
     cannotReach: 'Cannot reach the server at {url}. Is the backend running?',
     invalidLogin: 'Invalid email or password',
     notAllowed: 'You are not allowed to do that',
@@ -58,9 +60,6 @@ const en = {
     forgot: 'Forgot password?',
     noAccount: "Don't have an account?",
     createFree: "Create one, it's free",
-    tryInstantly: 'Try it instantly:',
-    demoUser: 'Demo user',
-    admin: 'Admin',
     expired: 'Your session expired. Please sign in again.',
     disabled: 'Your account was disabled by an administrator.',
     resetDone: 'Password updated. Sign in with your new password.',
@@ -95,6 +94,17 @@ const en = {
     updatePassword: 'Update password',
     invalidToken: 'This reset link is invalid or has expired. Request a new one.',
     server: 'Server',
+    verifyTitle: 'Check your email',
+    verifySubtitle: 'We sent a 6-digit code to {email}. Enter it below to activate your account.',
+    codeLabel: 'Verification code',
+    verifyBtn: 'Confirm my email',
+    resend: 'Send a new code',
+    resendIn: 'New code available in {s}s',
+    resent: 'A new code is on its way.',
+    notVerified: 'Please confirm your email first. We sent you a new code.',
+    spamHint: "Can't find it? Check your spam or promotions folder.",
+    wrongEmail: 'Wrong email? Sign up again',
+    verified: 'Email confirmed. Welcome to Money Monitor!',
     strength: ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'],
   },
   server: {
@@ -327,6 +337,14 @@ const en = {
     toLight: 'Switch to light mode',
     toDark: 'Switch to dark mode',
     languageHint: 'The app and the AI advisor will use this language.',
+    emailNotifs: 'Email notifications',
+    emailNotifsHint: 'Budget alerts, goals reached, monthly reports and security notices are also sent to {email}.',
+    dangerZone: 'Delete account',
+    deleteAccount: 'Delete my account',
+    deleteAccountHint: 'Permanently deletes your account and all your data: expenses, income, budgets, goals. This cannot be undone.',
+    deleteConfirmTitle: 'Delete your account?',
+    deleteConfirmMsg: 'Enter your password to confirm. All your data will be permanently deleted.',
+    deleted: 'Your account has been deleted.',
     restartTitle: 'Restart needed',
     restartMsg: 'The app needs to restart to switch between left-to-right and right-to-left layout.',
     restart: 'Restart now',
@@ -425,5 +443,5 @@ const en = {
 
 export default en;
 
-type Widen<T> = T extends string ? string : T extends readonly string[] ? string[] : { [K in keyof T]: Widen<T[K]> };
+export type Widen<T> = T extends string ? string : T extends readonly string[] ? string[] : { [K in keyof T]: Widen<T[K]> };
 export type Dict = Widen<typeof en>;

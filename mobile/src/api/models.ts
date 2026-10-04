@@ -24,13 +24,16 @@ export interface User {
   monthlyIncome: number;
   savingsGoal: number;
   language: string;
+  emailNotifications: boolean;
   createdAt: string;
   lastLoginAt: string | null;
 }
 
 export interface AuthResponse {
-  token: string;
+  /** null right after sign-up while the email code hasn't been confirmed. */
+  token: string | null;
   user: User;
+  verificationRequired?: boolean;
 }
 
 export interface Category {

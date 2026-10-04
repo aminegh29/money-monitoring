@@ -15,6 +15,7 @@ import com.moneymonitor.security.JwtService;
 import com.moneymonitor.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +33,7 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class AuthService {
 
+
     private static final Duration RESET_TOKEN_VALIDITY = Duration.ofMinutes(30);
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -46,38 +48,84 @@ public class AuthService {
     private final AppProperties props;
     private final Texts texts;
     private final InsightInvalidator insights;
+    private final EmailVerificationService verifications;
+    private final EmailTemplates templates;
+    private final AccountDeletionService accountDeletion;
 
+    /** Require new accounts to confirm their email (EMAIL_VERIFICATION=false turns it off, e.g. for local tests). */
+    @Value("${app.email-verification:true}")
+    private boolean emailVerification;
+
+    /**
+     * Creates the account. With email verification on (the default), the account stays locked until the 6-digit code
+     * sent by email is confirmed: no token is returned yet.
+     */
     @Transactional
     public AuthResponse register(RegisterRequest req) {
         String email = req.email().trim().toLowerCase();
-        if (userRepository.existsByEmailIgnoreCase(email)) {
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user != null && user.isEmailVerified()) {
             throw new ApiException(HttpStatus.CONFLICT, "An account with this email already exists");
         }
-        User user = userRepository.save(User.builder()
-                .fullName(req.fullName().trim())
-                .email(email)
-                .password(passwordEncoder.encode(req.password()))
-                .role(Role.USER)
-                .currency(req.currency() == null || req.currency().isBlank() ? "MAD" : req.currency().toUpperCase())
-                .language(Lang.of(req.language()).code())
-                .lastLoginAt(Instant.now())
-                .build());
+        if (user == null) {
+            user = User.builder().email(email).role(Role.USER).build();
+        }
+        // An unconfirmed account can be registered again (typo in the name, lost code…): it still needs the emailed code.
+        user.setFullName(req.fullName().trim());
+        user.setPassword(passwordEncoder.encode(req.password()));
+        user.setCurrency(req.currency() == null || req.currency().isBlank() ? "MAD" : req.currency().toUpperCase());
+        user.setLanguage(Lang.of(req.language()).code());
+        user.setEmailVerified(!emailVerification);
+        user = userRepository.save(user);
 
-        Lang lang = Lang.of(user.getLanguage());
-        notificationService.notify(user, Notification.Type.SUCCESS, texts.t(lang, "n.welcome.title"), texts.t(lang, "n.welcome.msg"),
-                "/app/profile");
-        realtime.toAdmins("New user registered: " + user.getFullName());
-        return new AuthResponse(jwtService.generateToken(UserPrincipal.from(user)), UserDto.from(user));
+        if (emailVerification) {
+            verifications.sendCode(user);
+            return new AuthResponse(null, UserDto.from(user), true);
+        }
+        return welcome(user);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = ApiException.class) // keep the new code when sign-in is refused for an unconfirmed email
     public AuthResponse login(LoginRequest req) {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.email().trim().toLowerCase(), req.password()));
         UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
         User user = userRepository.findById(principal.id()).orElseThrow();
+        if (!user.isEmailVerified()) {
+            // Right password but email not confirmed yet: send a fresh code (at most once a minute) and tell the app.
+            verifications.resendIfAllowed(user);
+            throw new ApiException(HttpStatus.FORBIDDEN, "Please confirm your email first. We sent you a 6-digit code.", "EMAIL_NOT_VERIFIED");
+        }
         user.setLastLoginAt(Instant.now());
         return new AuthResponse(jwtService.generateToken(principal), UserDto.from(user));
+    }
+
+    /** Confirms the email code and signs the user in. */
+    @Transactional(noRollbackFor = ApiException.class)
+    public AuthResponse verifyEmail(VerifyEmailRequest req) {
+        User user = userRepository.findByEmailIgnoreCase(req.email().trim())
+                .filter(u -> !u.isEmailVerified())
+                .orElseThrow(EmailVerificationService::invalidCode);
+        verifications.verify(user, req.code());
+        return welcome(user);
+    }
+
+    /** Always answers the same way so the endpoint can't be used to discover registered emails. */
+    @Transactional
+    public void resendVerification(ResendCodeRequest req) {
+        userRepository.findByEmailIgnoreCase(req.email().trim())
+                .filter(u -> !u.isEmailVerified())
+                .ifPresent(verifications::resendIfAllowed);
+    }
+
+    /** First sign-in of a confirmed account: welcome notification (also emailed) and a session token. */
+    private AuthResponse welcome(User user) {
+        user.setLastLoginAt(Instant.now());
+        Lang lang = Lang.of(user.getLanguage());
+        notificationService.notify(user, Notification.Type.SUCCESS, texts.t(lang, "n.welcome.title"), texts.t(lang, "n.welcome.msg"),
+                "/app/profile");
+        realtime.toAdmins("New user registered: " + user.getFullName());
+        return new AuthResponse(jwtService.generateToken(UserPrincipal.from(user)), UserDto.from(user));
     }
 
     /** Always answers the same way so the endpoint can't be used to discover registered emails. */
@@ -91,18 +139,9 @@ public class AuthService {
             tokenRepository.save(PasswordResetToken.builder()
                     .token(token).user(user).expiresAt(Instant.now().plus(RESET_TOKEN_VALIDITY)).build());
 
-            String link = props.frontendUrl() + "/reset-password?token=" + token;
-            mailService.send(user.getEmail(), "Reset your Money Monitor password", """
-                    Hi %s,
-
-                    We received a request to reset your password. Click the link below to choose a new one:
-
-                    %s
-
-                    This link expires in 30 minutes. If you didn't ask for this, you can ignore this email.
-
-                    — Money Monitor
-                    """.formatted(user.getFullName(), link));
+            String link = props.frontendUrl().replaceAll("/+$", "") + "/reset-password?token=" + token;
+            var mail = templates.passwordReset(Lang.of(user.getLanguage()), user.getFullName(), link, token);
+            mailService.send(user.getEmail(), mail.subject(), mail.text(), mail.html());
         });
     }
 
@@ -138,6 +177,7 @@ public class AuthService {
         user.setMonthlyIncome(req.monthlyIncome());
         user.setSavingsGoal(req.savingsGoal());
         if (req.language() != null) user.setLanguage(req.language());
+        if (req.emailNotifications() != null) user.setEmailNotifications(req.emailNotifications());
         insights.profileChanged(userId);
         UserDto dto = UserDto.from(user);
         realtime.toUser(user.getEmail(), RealtimeService.EventType.PROFILE_CHANGED, dto);
@@ -151,6 +191,19 @@ public class AuthService {
         UserDto dto = UserDto.from(user);
         realtime.toUser(user.getEmail(), RealtimeService.EventType.PROFILE_CHANGED, dto);
         return dto;
+    }
+
+    /** A user deletes their own account and all its data. The password is asked again to confirm. */
+    @Transactional
+    public void deleteOwnAccount(Long userId, DeleteAccountRequest req) {
+        User user = getUser(userId);
+        if (!passwordEncoder.matches(req.password(), user.getPassword())) {
+            throw ApiException.badRequest("Current password is incorrect");
+        }
+        if (user.getRole() == Role.ADMIN) {
+            throw ApiException.badRequest("Administrator accounts can't be deleted from here");
+        }
+        accountDeletion.delete(user);
     }
 
     @Transactional

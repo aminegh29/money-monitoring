@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByEnabledTrue();
 
     List<User> findAllByOrderByCreatedAtDesc();
+
+    /** Accounts that never confirmed their email (older accounts have a null flag and are not matched). */
+    List<User> findByEmailVerifiedFalseAndCreatedAtBefore(Instant before);
 }

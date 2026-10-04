@@ -13,6 +13,8 @@ export const api = {
   login: (email: string, password: string) => http.post<AuthResponse>('/auth/login', { email, password }),
   register: (body: { fullName: string; email: string; password: string; currency: string; language: string }) =>
     http.post<AuthResponse>('/auth/register', body),
+  verifyEmail: (email: string, code: string) => http.post<AuthResponse>('/auth/verify-email', { email, code }),
+  resendVerification: (email: string) => http.post<{ message: string }>('/auth/resend-verification', { email }),
   forgotPassword: (email: string) => http.post<{ message: string }>('/auth/forgot-password', { email }),
   validateResetToken: (token: string) => http.get<{ valid: boolean }>('/auth/reset-password/validate', { token }),
   resetPassword: (token: string, password: string) => http.post<{ message: string }>('/auth/reset-password', { token, password }),
@@ -54,9 +56,10 @@ export const api = {
   deleteNotification: (id: number) => http.delete(`/notifications/${id}`),
 
   // Profile
-  updateProfile: (body: { fullName: string; currency: string; monthlyIncome: number; savingsGoal: number; language: string }) =>
+  updateProfile: (body: { fullName: string; currency: string; monthlyIncome: number; savingsGoal: number; language: string; emailNotifications: boolean }) =>
     http.put<User>('/profile', body),
   setLanguage: (language: string) => http.put<User>('/profile/language', { language }),
+  deleteAccount: (password: string) => http.post<void>('/profile/delete', { password }),
   changePassword: (currentPassword: string, newPassword: string) =>
     http.post<{ message: string }>('/profile/password', { currentPassword, newPassword }),
 

@@ -94,8 +94,12 @@ export class ApiService {
   }
 
   // Profile
-  updateProfile(body: { fullName: string; currency: string; monthlyIncome: number; savingsGoal: number; language: string }) {
+  updateProfile(body: { fullName: string; currency: string; monthlyIncome: number; savingsGoal: number; language: string; emailNotifications: boolean }) {
     return this.http.put<User>(`${apiUrl()}/profile`, body);
+  }
+  /** Permanently deletes the signed-in account and all its data (password required). */
+  deleteAccount(password: string) {
+    return this.http.post<void>(`${apiUrl()}/profile/delete`, { password });
   }
   setLanguage(language: string) {
     return this.http.put<User>(`${apiUrl()}/profile/language`, { language });

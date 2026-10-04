@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register",
+                                "/api/auth/verify-email", "/api/auth/resend-verification",
                                 "/api/auth/forgot-password", "/api/auth/reset-password",
                                 "/api/auth/reset-password/validate").permitAll()
                         // WebSocket handshake is public; STOMP CONNECT frames are authenticated by the channel interceptor.

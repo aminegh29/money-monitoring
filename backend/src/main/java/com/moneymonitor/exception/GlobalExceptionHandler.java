@@ -19,11 +19,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    public record ErrorResponse(String message, Map<String, String> errors) {}
+    /** code is set for errors the apps react to (EMAIL_NOT_VERIFIED, RATE_LIMITED…). */
+    public record ErrorResponse(String message, Map<String, String> errors, String code) {
+        ErrorResponse(String message, Map<String, String> errors) {
+            this(message, errors, null);
+        }
+    }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
-        return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(ex.getMessage(), null));
+        return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(ex.getMessage(), null, ex.getCode()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

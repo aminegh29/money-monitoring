@@ -26,15 +26,12 @@ npm start
 
 Or double-click **`start.bat`** to launch both in separate windows.
 
-Open **http://localhost:4200** and sign in with a ready-made account:
+Open **http://localhost:4200** and create an account on the **Create account** page (locally, the 6-digit
+verification code is printed in the backend console when no email service is configured).
 
-| Role  | Email                       | Password    |
-|-------|-----------------------------|-------------|
-| Admin | `admin@moneymonitor.local`  | `Admin@123` |
-| User  | `demo@moneymonitor.local`   | `Demo@123`  |
-
-The demo user comes with realistic expenses since January, so every chart, budget and report has data.
-You can also create your own account on the **Create account** page.
+The first admin account comes from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. For local testing only, a demo user with
+sample data (`demo@moneymonitor.local` / `Demo@123`) can be created by starting the backend with `SEED_DEMO=true`.
+It is never shown on the sign-in page and is off by default. **Never enable it on the hosted site.**
 
 ---
 
@@ -53,7 +50,7 @@ and live updates. Admin screens remain web-only; admins can still sign in and us
    npm install     # first time only
    npx expo start
    ```
-4. Scan the QR code with the iPhone **Camera** app; it opens in Expo Go. Sign in with the demo account.
+4. Scan the QR code with the iPhone **Camera** app; it opens in Expo Go. Sign in with your account.
 
 The phone and the PC must be on the **same Wi-Fi**. The app finds the backend automatically: it uses the same IP
 the QR code points to, on port 8080. To use a different address, tap **🛰 Server** on the sign-in screen.
@@ -169,7 +166,8 @@ automatically falls back to the rule-based advisor.
 
 ## 📄 Features
 
-**Public pages:** landing page · sign in · create account (password strength meter) · forgot password · reset password · 404
+**Public pages:** landing page (features, security, FAQ) · sign in · create account (password strength meter) ·
+email verification (6-digit code) · forgot password · reset password · privacy policy · terms of use · 404
 
 **User**
 - **Dashboard:** income, expenses, balance, savings rate and goal progress, 6-month income vs expenses chart,
@@ -186,7 +184,8 @@ automatically falls back to the rule-based advisor.
 - **Reports:** monthly PDF (KPIs, daily chart, categories, budgets, every expense, AI advice) and
   annual PDF (month-by-month table and chart, category totals, details per month, AI suggestions for next year)
 - **Notifications:** budget alerts, "your report is ready" on the 1st of each month (and on January 1st for the annual report)
-- **Profile:** name, currency, expected income, savings goal, password change, dark mode, **language**
+- **Profile:** name, currency, expected income, savings goal, email notifications on/off, password change, dark mode,
+  **language**, and **delete my account** (password required, removes all data)
 
 ### 🌐 Languages
 English, French, Arabic (right-to-left layout), Spanish and Italian, on the web app and the mobile app.
@@ -195,10 +194,10 @@ The language is saved on the account, so the web app, the phone and the AI advis
 PDF reports and error messages coming from the server are in English.
 
 Translation files:
-- mobile/src/i18n/*.ts: shared texts (the Expo app uses them as they are).
-- rontend/src/app/i18n/*.ts: a copy of the shared texts, plus web-*.ts for web-only pages (landing, admin…).
+- `mobile/src/i18n/*.ts`: shared texts (the Expo app uses them as they are).
+- `frontend/src/app/i18n/*.ts`: a copy of the shared texts, plus `web-*.ts` for web-only pages (landing, legal, admin…).
   **When you change a shared text, update both copies.** TypeScript fails the build if a language misses a key.
-- ackend/src/main/resources/i18n/messages_*.properties: offline advisor and notifications.
+- `backend/src/main/resources/i18n/messages_*.properties`: offline advisor, notifications and emails.
 
 **Admin**
 - **Overview:** users, active accounts, registrations chart, monthly volume, AI and real-time status
@@ -208,7 +207,7 @@ Translation files:
 - The dashboard trend, budgets and admin user list use grouped SQL queries instead of one query per month, budget or user.
 - Expense lists load their categories in the same query.
 - JSON responses are gzip-compressed (faster on phones).
-- AI texts are cached per user, period and language in the i_insights table and only regenerated when your data changes.
+- AI texts are cached per user, period and language in the `ai_insights` table and only regenerated when your data changes.
 
 ### ⚡ Real time
 The browser keeps a WebSocket (STOMP) connection open (the **Live** badge in the top bar).
@@ -216,10 +215,16 @@ When you add, edit or delete anything, all your open tabs and devices update ins
 budgets and notifications. Budget alerts pop up the moment you cross 80% or 100%, and admins see new
 registrations and account changes live.
 
-### 🔐 Forgot password
-The reset link is valid for 30 minutes and can be used once. **Locally, without an email server, the link is printed in
-the backend console.** To send real emails, set `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
-(for example Gmail with an app password: `smtp.gmail.com`, port `587`).
+### ✉️ Emails (verification, password reset, notifications)
+- **Sign-up verification:** a new account receives a 6-digit code (valid 15 minutes, 5 tries, a new code at most
+  every 60 seconds). The account can't sign in until the code is entered. Unconfirmed accounts are removed after 3 days.
+- **Password reset:** the link is valid for 30 minutes and can be used once.
+- **Notifications:** budget alerts, goals reached, monthly reports and security notices are also emailed
+  (each user can turn this off in their profile).
+- **Sending:** set `BREVO_API_KEY` + `MAIL_FROM` (+ `MAIL_FROM_NAME`) to send through Brevo's HTTP API (works on Render,
+  where SMTP is blocked), or `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` for SMTP.
+  **Locally, with neither, codes and links are printed in the backend console.**
+- Sign-in, sign-up, verification and reset requests are rate-limited per IP and per email.
 
 ---
 
@@ -232,7 +237,10 @@ All settings are in `backend/src/main/resources/application.yml` and can be over
 | `AI_PROVIDER` / `AI_API_KEY` / `AI_MODEL` / `AI_BASE_URL` | `groq` / empty | AI advisor (see above) |
 | `JWT_SECRET` | dev value | **Change it** for anything beyond local use (≥ 32 characters) |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@moneymonitor.local` / `Admin@123` | First admin account |
-| `MAIL_*` | empty | SMTP for password-reset emails |
+| `BREVO_API_KEY` / `MAIL_FROM` / `MAIL_FROM_NAME` | empty / empty / `Money Monitor` | Emails through Brevo's HTTP API |
+| `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | empty | Emails through SMTP (alternative to Brevo) |
+| `EMAIL_VERIFICATION` | `true` | New accounts must confirm their email with a 6-digit code |
+| `SEED_DEMO` | `false` | Local testing only: creates the demo user with sample data |
 
 **Database:** a file-based H2 database is created in `backend/data/` (nothing to install; data survives restarts).
 Browse it at http://localhost:8080/h2-console (JDBC URL `jdbc:h2:file:./data/moneymonitor`, user `sa`, no password).
@@ -273,7 +281,8 @@ mobile/src/                Expo (React Native) app for Expo Go
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/auth/register`, `/login`, `/forgot-password`, `/reset-password` | Authentication |
+| POST | `/api/auth/register`, `/login`, `/verify-email`, `/resend-verification`, `/forgot-password`, `/reset-password` | Authentication |
+| POST | `/api/profile/delete` | Delete my account and all its data (password required) |
 | GET | `/api/dashboard?month=2026-09` | Dashboard data |
 | GET/POST/PUT/DELETE | `/api/expenses`, `/api/incomes`, `/api/categories`, `/api/budgets` | CRUD |
 | GET | `/api/ai/advice/monthly?month=`, `/api/ai/advice/yearly?year=` | AI advice (cached; `refresh=true` regenerates it) |

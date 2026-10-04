@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, input, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -37,17 +38,10 @@ import { AuthLayoutComponent } from './auth-layout.component';
       </form>
 
       <p class="muted switch">{{ 'auth.noAccount' | t }} <a routerLink="/register">{{ 'auth.createFree' | t }}</a></p>
-
-      <div class="demo">
-        <span class="muted small">{{ 'auth.tryInstantly' | t }}</span>
-        <button class="btn btn-ghost btn-sm" (click)="fill('demo@moneymonitor.local', 'Demo@123')">👤 {{ 'auth.demoUser' | t }}</button>
-        <button class="btn btn-ghost btn-sm" (click)="fill('admin@moneymonitor.local', 'Admin@123')">🛡️ {{ 'auth.admin' | t }}</button>
-      </div>
     </app-auth-layout>
   `,
   styles: [`
     .switch { text-align: center; margin-top: 22px; }
-    .demo { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--border); }
   `],
 })
 export class LoginComponent {
@@ -64,20 +58,21 @@ export class LoginComponent {
     password: ['', Validators.required],
   });
 
-  fill(email: string, password: string) {
-    this.form.setValue({ email, password });
-  }
-
   submit() {
     if (this.form.invalid) return;
     this.loading.set(true);
     this.error.set('');
     const { email, password } = this.form.getRawValue();
-    this.auth.login(email, password).subscribe({
+    this.auth.login(email.trim(), password).subscribe({
       next: () => this.router.navigateByUrl(this.auth.homeRoute()),
       error: (err) => {
-        this.error.set(errorMessage(err, t('errors.invalidLogin')));
         this.loading.set(false);
+        if (err instanceof HttpErrorResponse && err.error?.code === 'EMAIL_NOT_VERIFIED') {
+          // Right password, email not confirmed yet: a fresh code was just emailed.
+          this.router.navigate(['/verify-email'], { queryParams: { email: email.trim(), notice: 'notVerified' } });
+          return;
+        }
+        this.error.set(errorMessage(err, t('errors.invalidLogin')));
       },
     });
   }
