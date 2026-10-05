@@ -1,4 +1,5 @@
 import { DecimalPipe } from '@angular/common';
+import { IconComponent } from '../../shared/icon.component';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,11 +20,11 @@ import { LocalDatePipe, MarkdownPipe, MoneyPipe, TimeAgoPipe } from '../../share
 
 @Component({
   selector: 'app-goal-detail',
-  imports: [ReactiveFormsModule, RouterLink, RingComponent, GoalFormComponent, ModalComponent, ConfirmComponent,
+  imports: [IconComponent, ReactiveFormsModule, RouterLink, RingComponent, GoalFormComponent, ModalComponent, ConfirmComponent,
     MoneyPipe, LocalDatePipe, MarkdownPipe, TimeAgoPipe, DecimalPipe, TranslatePipe],
   template: `
     <div class="page">
-      <a routerLink="/app/goals" class="small back">{{ rtl() ? '→' : '←' }} {{ 'goals.title' | t }}</a>
+      <a routerLink="/app/goals" class="small back"><app-icon [name]="rtl() ? 'arrow-right' : 'arrow-left'" [size]="14" />{{ 'goals.title' | t }}</a>
 
       @if (goal(); as g) {
         <div class="page-header">
@@ -32,9 +33,9 @@ import { LocalDatePipe, MarkdownPipe, MoneyPipe, TimeAgoPipe } from '../../share
             <span [class]="'badge badge-' + tone()">{{ 'goals.status.' + g.status | t }}</span>
           </div>
           <div class="header-actions">
-            <button class="btn btn-ghost" (click)="editOpen.set(true)">✏️ {{ 'common.edit' | t }}</button>
-            <button class="btn btn-ghost danger" (click)="confirmDelete.set(true)">🗑️ {{ 'common.delete' | t }}</button>
-            <button class="btn btn-primary" (click)="depositOpen.set(true)">＋ {{ 'goals.addDeposit' | t }}</button>
+            <button class="btn btn-ghost" (click)="editOpen.set(true)"><app-icon name="pencil" [size]="16" />{{ 'common.edit' | t }}</button>
+            <button class="btn btn-ghost danger" (click)="confirmDelete.set(true)"><app-icon name="trash" [size]="16" />{{ 'common.delete' | t }}</button>
+            <button class="btn btn-primary" (click)="depositOpen.set(true)"><app-icon name="plus" [size]="16" />{{ 'goals.addDeposit' | t }}</button>
           </div>
         </div>
 
@@ -71,7 +72,7 @@ import { LocalDatePipe, MarkdownPipe, MoneyPipe, TimeAgoPipe } from '../../share
               <div class="deposit">
                 <div><b class="text-success num">+{{ d.amount | money: cur() }}</b>
                   <div class="dim small">{{ d.date | date2 }}{{ d.note ? ' · ' + d.note : '' }}</div></div>
-                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="depositToDelete.set(d)">🗑️</button>
+                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="depositToDelete.set(d)"><app-icon name="trash" [size]="16" /></button>
               </div>
             } @empty {
               <p class="muted small">{{ 'goals.noDeposits' | t }}</p>
@@ -81,11 +82,11 @@ import { LocalDatePipe, MarkdownPipe, MoneyPipe, TimeAgoPipe } from '../../share
 
         <section class="card ai mt">
           <div class="card-header">
-            <h3><span class="gradient-text">{{ 'goals.aiPlan' | t }}</span></h3>
-            <button class="btn btn-ghost btn-sm" (click)="loadPlan(true)" [disabled]="planLoading()">↻ {{ 'common.regenerate' | t }}</button>
+            <h3 class="ai-title"><span class="ai-icon"><app-icon name="lightbulb" [size]="16" /></span>{{ 'goals.aiPlan' | t }}</h3>
+            <button class="btn btn-ghost btn-sm" (click)="loadPlan(true)" [disabled]="planLoading()"><app-icon name="refresh-cw" [size]="15" />{{ 'common.regenerate' | t }}</button>
           </div>
           @if (planLoading()) {
-            <div class="thinking"><div class="orb"></div><p><b>{{ 'advisor.analysing' | t }}</b></p></div>
+            <div class="thinking"><span class="spinner lg"></span><p><b>{{ 'advisor.analysing' | t }}</b></p></div>
           } @else if (plan()) {
             <div class="markdown" [innerHTML]="plan()!.content | markdown"></div>
             <div class="meta muted small">
@@ -141,21 +142,20 @@ import { LocalDatePipe, MarkdownPipe, MoneyPipe, TimeAgoPipe } from '../../share
     }
   `,
   styles: [`
-    .back { display: inline-block; margin-bottom: 12px; }
+    .back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 12px; }
     .page-header h1 { margin-bottom: 6px; }
-    .hero { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; background-image: var(--gradient-soft); }
-    .ring-value { font-size: 28px; font-weight: 700; }
+    .hero { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+    .ring-value { font-size: 24px; font-weight: 600; }
     .hero-text { flex: 1; min-width: 240px; display: grid; gap: 4px; }
-    .big { font-family: var(--font-display); font-size: 34px; font-weight: 700; letter-spacing: -.03em; }
+    .big { font-size: 30px; font-weight: 600; letter-spacing: -.02em; }
     .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; margin-top: 14px; }
     .stats div { display: grid; gap: 2px; }
     .accent { color: var(--primary-text); }
     .deposit { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
-    .ai { border-color: color-mix(in srgb, var(--violet) 30%, var(--border)); }
+    .ai-title { display: flex; align-items: center; gap: 8px; }
+    .ai-icon { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-text); }
     .meta { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
-    .thinking { text-align: center; padding: 40px 10px; display: grid; gap: 6px; justify-items: center; }
-    .orb { width: 54px; height: 54px; border-radius: 50%; background: var(--gradient); animation: breathe 1.4s ease-in-out infinite; }
-    @keyframes breathe { 50% { transform: scale(.82); opacity: .7; } }
+    .thinking { text-align: center; padding: 40px 10px; display: grid; gap: 10px; justify-items: center; }
     .danger { color: var(--danger); }
   `],
 })

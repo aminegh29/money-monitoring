@@ -1,4 +1,5 @@
 import { Component, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -14,7 +15,7 @@ type Tab = 'month' | 'year' | 'savings';
 
 @Component({
   selector: 'app-advisor',
-  imports: [FormsModule, RouterLink, MonthPickerComponent, MarkdownPipe, MoneyPipe, TimeAgoPipe, TranslatePipe],
+  imports: [IconComponent, FormsModule, RouterLink, MonthPickerComponent, MarkdownPipe, MoneyPipe, TimeAgoPipe, TranslatePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -24,7 +25,7 @@ type Tab = 'month' | 'year' | 'savings';
         </div>
         @if (status(); as s) {
           <span class="badge" [class.badge-success]="s.configured" [class.badge-warning]="!s.configured">
-            {{ s.configured ? '🟢 ' + s.provider + ' · ' + s.model : ('web.advisor.offlineLong' | t) }}
+            <i class="status-dot"></i>{{ s.configured ? s.provider + ' · ' + s.model : ('web.advisor.offlineLong' | t) }}
           </span>
         }
       </div>
@@ -46,7 +47,7 @@ type Tab = 'month' | 'year' | 'savings';
                   @for (y of years; track y) { <option [value]="y">{{ y }}</option> }
                 </select>
               }
-              <button class="btn btn-ghost btn-sm" (click)="load(true)" [disabled]="loading()">↻ {{ 'common.regenerate' | t }}</button>
+              <button class="btn btn-ghost btn-sm" (click)="load(true)" [disabled]="loading()"><app-icon name="refresh-cw" [size]="15" />{{ 'common.regenerate' | t }}</button>
             </div>
           </div>
 
@@ -63,7 +64,7 @@ type Tab = 'month' | 'year' | 'savings';
 
           @if (loading()) {
             <div class="thinking">
-              <div class="orb"></div>
+              <span class="spinner lg"></span>
               <p><b>{{ 'advisor.analysing' | t }}</b></p>
               <p class="muted small">{{ 'advisor.analysingHint' | t }}</p>
             </div>
@@ -80,13 +81,13 @@ type Tab = 'month' | 'year' | 'savings';
         <!-- Chat -->
         <div class="card chat">
           <div class="card-header">
-            <h3>💬 {{ 'advisor.askPenny' | t }}</h3>
+            <h3 class="chat-title"><span class="bot"><app-icon name="sparkles" [size]="15" /></span>{{ 'advisor.askPenny' | t }}</h3>
             @if (messages().length) { <button class="btn btn-ghost btn-sm" (click)="messages.set([])">{{ 'advisor.clear' | t }}</button> }
           </div>
           <div class="messages" #scroller>
             @if (!messages().length) {
               <div class="welcome">
-                <div class="emoji">🤖</div>
+                <div class="empty-icon"><app-icon name="bot" [size]="22" /></div>
                 <p>{{ 'advisor.chatHello' | t }}</p>
                 <div class="suggestions">
                   @for (s of suggestions(); track s) { <button class="chip" (click)="send(s)">{{ s }}</button> }
@@ -95,19 +96,19 @@ type Tab = 'month' | 'year' | 'savings';
             }
             @for (m of messages(); track $index) {
               <div class="msg" [class.me]="m.role === 'user'">
-                @if (m.role === 'assistant') { <span class="bot">✨</span> }
+                @if (m.role === 'assistant') { <span class="bot"><app-icon name="sparkles" [size]="15" /></span> }
                 <div class="bubble">
                   @if (m.role === 'assistant') { <div class="markdown" [innerHTML]="m.content | markdown"></div> } @else { {{ m.content }} }
                 </div>
               </div>
             }
             @if (sending()) {
-              <div class="msg"><span class="bot">✨</span><div class="bubble typing"><span></span><span></span><span></span></div></div>
+              <div class="msg"><span class="bot"><app-icon name="sparkles" [size]="15" /></span><div class="bubble typing"><span></span><span></span><span></span></div></div>
             }
           </div>
           <form class="composer" (ngSubmit)="send(draft)">
             <input class="input" name="draft" [(ngModel)]="draft" [placeholder]="'advisor.placeholder' | t" maxlength="2000" autocomplete="off" />
-            <button class="btn btn-primary" [disabled]="!draft.trim() || sending()">{{ 'advisor.send' | t }}</button>
+            <button class="btn btn-primary" [disabled]="!draft.trim() || sending()"><app-icon name="send" [size]="15" />{{ 'advisor.send' | t }}</button>
           </form>
         </div>
       </div>
@@ -119,31 +120,30 @@ type Tab = 'month' | 'year' | 'savings';
     .wrap { flex-wrap: wrap; }
     .year { width: 110px; height: 36px; }
     .advice .markdown { font-size: 14.5px; }
-    .savings-intro { display: grid; gap: 8px; padding: 12px 14px; margin-bottom: 16px; border-radius: 14px; background: var(--primary-soft); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .savings-intro { display: grid; gap: 8px; padding: 12px 14px; margin-bottom: 16px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); }
     .meta { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
     .thinking { text-align: center; padding: 50px 10px; display: grid; gap: 6px; justify-items: center; }
-    .orb { width: 58px; height: 58px; border-radius: 50%; background: var(--gradient); margin-bottom: 12px; animation: breathe 1.4s ease-in-out infinite; box-shadow: 0 0 40px rgba(124,58,237,.45); }
-    @keyframes breathe { 50% { transform: scale(.82); opacity: .7; } }
+    .thinking .spinner { margin-bottom: 10px; }
 
-    .chat { display: flex; flex-direction: column; height: calc(100vh - 190px); min-height: 520px; position: sticky; top: 84px; padding-bottom: 16px; }
+    .chat { display: flex; flex-direction: column; height: calc(100vh - 170px); min-height: 520px; position: sticky; top: 76px; padding-bottom: 16px; }
+    .chat-title { display: flex; align-items: center; gap: 8px; }
     .messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 4px 2px 12px; }
     .welcome { text-align: center; margin: auto 0; color: var(--text-muted); }
-    .welcome .emoji { font-size: 42px; margin-bottom: 8px; }
     .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
-    .chip { border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13px; cursor: pointer; }
-    .chip:hover { border-color: var(--primary); color: var(--primary-text); }
+    .chip { border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+    .chip:hover { background: var(--surface-2); }
     .msg { display: flex; gap: 10px; align-items: flex-end; }
     .msg.me { justify-content: flex-end; }
-    .bot { width: 30px; height: 30px; border-radius: 10px; background: var(--gradient); display: grid; place-items: center; flex-shrink: 0; font-size: 14px; }
-    .bubble { max-width: 85%; padding: 11px 15px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border); font-size: 14px; border-end-start-radius: 4px; }
+    .bot { width: 28px; height: 28px; border-radius: 8px; background: var(--primary-soft); color: var(--primary-text); display: grid; place-items: center; flex-shrink: 0; }
+    .bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; background: var(--surface-2); font-size: 14px; border-end-start-radius: 4px; }
     .bubble .markdown p:last-child, .bubble .markdown ul:last-child { margin-bottom: 0; }
-    .me .bubble { background: var(--gradient); color: #fff; border: none; border-end-start-radius: 16px; border-end-end-radius: 4px; }
+    .me .bubble { background: var(--primary); color: var(--on-primary); border-end-start-radius: 12px; border-end-end-radius: 4px; }
     .typing { display: flex; gap: 4px; padding: 14px 16px; }
     .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); animation: blink 1.2s infinite; }
     .typing span:nth-child(2) { animation-delay: .2s; } .typing span:nth-child(3) { animation-delay: .4s; }
     @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
     .composer { display: flex; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
-    .chat { border-color: color-mix(in srgb, var(--violet) 30%, var(--border)); }
     @media (max-width: 1100px) { .chat { position: relative; top: 0; height: 70vh; min-height: 460px; } }
     @media (max-width: 760px) { .wrap .row { width: 100%; justify-content: space-between; } .bubble { max-width: 92%; } }
   `],
@@ -218,7 +218,7 @@ export class AdvisorComponent {
         this.scrollDown();
       },
       error: (err) => {
-        this.messages.update((m) => [...m, { role: 'assistant', content: '⚠️ ' + (errorMessage(err) || t('common.somethingWrong')) }]);
+        this.messages.update((m) => [...m, { role: 'assistant', content: (errorMessage(err) || t('common.somethingWrong')) }]);
         this.sending.set(false);
       },
     });

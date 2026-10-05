@@ -11,6 +11,7 @@ import { Advice, Dashboard, Goal } from '../../core/models';
 import { RealtimeService } from '../../core/realtime.service';
 import { Months, ToastService } from '../../core/ui.service';
 import { ChartComponent, verticalGradient } from '../../shared/chart.component';
+import { IconComponent } from '../../shared/icon.component';
 import { CountUpDirective, RingComponent } from '../../shared/fx';
 import { Native } from '../../core/native';
 import { MonthPickerComponent } from '../../shared/month-picker.component';
@@ -19,7 +20,7 @@ import { formatMoney, LocalDatePipe, MarkdownPipe, MoneyPipe } from '../../share
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, ChartComponent, MonthPickerComponent, MoneyPipe, MarkdownPipe, CountUpDirective, RingComponent, TranslatePipe, CategoryNamePipe, LocalDatePipe, DecimalPipe],
+  imports: [RouterLink, ChartComponent, MonthPickerComponent, MoneyPipe, MarkdownPipe, CountUpDirective, RingComponent, TranslatePipe, CategoryNamePipe, LocalDatePipe, DecimalPipe, IconComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -89,20 +90,20 @@ export class DashboardComponent {
       data: {
         labels: trend.map((p) => Months.name(p.period, 'short')),
         datasets: [
-          { label: t('dashboard.incomeLegend'), data: trend.map((p) => p.income), backgroundColor: verticalGradient('rgba(52,245,181,.95)', 'rgba(52,245,181,.08)'),
-            borderRadius: 10, borderSkipped: false, maxBarThickness: 22, glowColor: 'rgba(52,245,181,.6)' } as any,
-          { label: t('dashboard.expensesLegend'), data: trend.map((p) => p.expenses), backgroundColor: verticalGradient('rgba(139,92,246,.95)', 'rgba(34,211,238,.1)'),
-            borderRadius: 10, borderSkipped: false, maxBarThickness: 22, glowColor: 'rgba(139,92,246,.7)' } as any,
+          { label: t('dashboard.incomeLegend'), data: trend.map((p) => p.income), backgroundColor: 'var(--chart-1)',
+            borderRadius: 4, borderSkipped: 'bottom', maxBarThickness: 18, categoryPercentage: 0.6 } as any,
+          { label: t('dashboard.expensesLegend'), data: trend.map((p) => p.expenses), backgroundColor: 'var(--border-strong)',
+            borderRadius: 4, borderSkipped: 'bottom', maxBarThickness: 18, categoryPercentage: 0.6 } as any,
         ],
       },
       options: {
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7 } },
+          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 8, boxHeight: 8 } },
           tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${formatMoney(c.parsed.y, this.cur())}` } },
         },
         scales: {
           x: { grid: { display: false }, border: { display: false } },
-          y: { beginAtZero: true, border: { display: false }, grid: { color: 'rgba(139,147,184,.08)' }, ticks: { callback: (v) => compact(Number(v)), maxTicksLimit: 5 } },
+          y: { beginAtZero: true, border: { display: false }, grid: { color: 'var(--border)' }, ticks: { callback: (v) => compact(Number(v)), maxTicksLimit: 5 } },
         },
       },
     };
@@ -115,11 +116,10 @@ export class DashboardComponent {
       type: 'doughnut',
       data: {
         labels: cats.map((c) => catName(c.name)),
-        datasets: [{ data: cats.map((c) => c.amount), backgroundColor: cats.map((c) => c.color), borderWidth: 0, spacing: 3, borderRadius: 6, hoverOffset: 10,
-          glowColor: 'rgba(139,92,246,.5)', glowBlur: 18 } as any],
+        datasets: [{ data: cats.map((c) => c.amount), backgroundColor: cats.map((c) => c.color), borderWidth: 2, borderColor: 'var(--surface)', hoverOffset: 4 } as any],
       },
       options: {
-        cutout: '76%',
+        cutout: '72%',
         plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c: any) => ` ${c.label}: ${formatMoney(Number(c.raw), this.cur())}` } } },
       } as any,
     };
@@ -137,21 +137,21 @@ export class DashboardComponent {
       data: {
         labels: visible.map((d) => Number(d.date.slice(8))),
         datasets: [
-          { label: t('dashboard.cumulative'), data: cumulative, borderColor: '#a78bfa', backgroundColor: verticalGradient('rgba(139,92,246,.35)', 'rgba(34,211,238,0)'),
-            fill: true, tension: 0.42, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: '#22d3ee', borderWidth: 3, yAxisID: 'y1', glowBlur: 18 } as any,
-          { type: 'bar', label: t('dashboard.daily'), data: visible.map((d) => d.amount), backgroundColor: 'rgba(34,211,238,.45)', hoverBackgroundColor: '#22d3ee',
-            borderRadius: 4, maxBarThickness: 10, yAxisID: 'y' } as any,
+          { label: t('dashboard.cumulative'), data: cumulative, borderColor: 'var(--chart-1)', backgroundColor: verticalGradient('var(--chart-1)/.14', 'var(--chart-1)/0'),
+            fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: 'var(--chart-1)', borderWidth: 2, yAxisID: 'y1' } as any,
+          { type: 'bar', label: t('dashboard.daily'), data: visible.map((d) => d.amount), backgroundColor: 'var(--border-strong)', hoverBackgroundColor: 'var(--text-dim)',
+            borderRadius: 3, maxBarThickness: 10, yAxisID: 'y' } as any,
         ],
       },
       options: {
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7 } },
+          legend: { position: 'top', align: 'end', labels: { usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 8, boxHeight: 8 } },
           tooltip: { callbacks: { title: (items) => t('dashboard.day', { n: items[0].label }), label: (c) => ` ${c.dataset.label}: ${formatMoney(c.parsed.y, this.cur())}` } },
         },
         scales: {
           x: { grid: { display: false }, border: { display: false }, ticks: { maxTicksLimit: 10 } },
-          y: { beginAtZero: true, position: 'left', border: { display: false }, grid: { color: 'rgba(139,147,184,.08)' }, ticks: { callback: (v) => compact(Number(v)), maxTicksLimit: 5 } },
+          y: { beginAtZero: true, position: 'left', border: { display: false }, grid: { color: 'var(--border)' }, ticks: { callback: (v) => compact(Number(v)), maxTicksLimit: 5 } },
           y1: { beginAtZero: true, position: 'right', border: { display: false }, grid: { display: false }, ticks: { callback: (v) => compact(Number(v)), maxTicksLimit: 5 } },
         },
       },

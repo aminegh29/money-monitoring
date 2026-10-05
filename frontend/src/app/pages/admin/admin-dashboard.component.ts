@@ -9,11 +9,12 @@ import { RealtimeService } from '../../core/realtime.service';
 import { Months } from '../../core/ui.service';
 import { I18nService, t, TranslatePipe } from '../../core/i18n';
 import { ChartComponent } from '../../shared/chart.component';
+import { IconComponent } from '../../shared/icon.component';
 import { MoneyPipe, TimeAgoPipe } from '../../shared/pipes';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, ChartComponent, MoneyPipe, TimeAgoPipe, TranslatePipe],
+  imports: [RouterLink, ChartComponent, MoneyPipe, TimeAgoPipe, TranslatePipe, IconComponent],
   template: `
     <div class="page">
       <div class="page-header">
@@ -26,10 +27,10 @@ import { MoneyPipe, TimeAgoPipe } from '../../shared/pipes';
 
       @if (stats(); as s) {
         <div class="grid grid-4">
-          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon primary">👥</span>{{ 'web.admin.totalUsers' | t }}</div><div class="kpi-value">{{ s.totalUsers }}</div><div class="kpi-sub">{{ 'web.admin.admins' | t: { n: s.admins } }}</div></div>
-          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon success">✅</span>{{ 'web.admin.activeAccounts' | t }}</div><div class="kpi-value">{{ s.activeUsers }}</div><div class="kpi-sub">{{ 'web.admin.disabledCount' | t: { n: s.totalUsers - s.activeUsers } }}</div></div>
-          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon warning">🆕</span>{{ 'web.admin.newThisMonth' | t }}</div><div class="kpi-value">{{ s.newUsersThisMonth }}</div><div class="kpi-sub">{{ 'web.admin.registrations' | t }}</div></div>
-          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon danger">🧾</span>{{ 'web.admin.expensesMonth' | t }}</div><div class="kpi-value">{{ s.expensesThisMonth }}</div><div class="kpi-sub">{{ 'web.admin.transactionsRecorded' | t }}</div></div>
+          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon primary"><app-icon name="users" [size]="16" /></span>{{ 'web.admin.totalUsers' | t }}</div><div class="kpi-value">{{ s.totalUsers }}</div><div class="kpi-sub">{{ 'web.admin.admins' | t: { n: s.admins } }}</div></div>
+          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon success"><app-icon name="badge-check" [size]="16" /></span>{{ 'web.admin.activeAccounts' | t }}</div><div class="kpi-value">{{ s.activeUsers }}</div><div class="kpi-sub">{{ 'web.admin.disabledCount' | t: { n: s.totalUsers - s.activeUsers } }}</div></div>
+          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon warning"><app-icon name="user-plus" [size]="16" /></span>{{ 'web.admin.newThisMonth' | t }}</div><div class="kpi-value">{{ s.newUsersThisMonth }}</div><div class="kpi-sub">{{ 'web.admin.registrations' | t }}</div></div>
+          <div class="card kpi"><div class="kpi-label"><span class="kpi-icon"><app-icon name="receipt" [size]="16" /></span>{{ 'web.admin.expensesMonth' | t }}</div><div class="kpi-value">{{ s.expensesThisMonth }}</div><div class="kpi-sub">{{ 'web.admin.transactionsRecorded' | t }}</div></div>
         </div>
 
         <div class="grid grid-3 mt">
@@ -95,9 +96,12 @@ export class AdminDashboardComponent {
       type: 'bar',
       data: {
         labels: regs.map((r) => Months.label(r.period, 'short')),
-        datasets: [{ label: t('web.admin.newUsers'), data: regs.map((r) => r.count), backgroundColor: '#6366f1', borderRadius: 8, maxBarThickness: 40 }],
+        datasets: [{ label: t('web.admin.newUsers'), data: regs.map((r) => r.count), backgroundColor: 'var(--chart-1)', borderRadius: 4, maxBarThickness: 32 }],
       },
-      options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { precision: 0 } } } },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false }, border: { display: false } }, y: { beginAtZero: true, border: { display: false }, grid: { color: 'var(--border)' }, ticks: { precision: 0 } } },
+      },
     };
   });
 

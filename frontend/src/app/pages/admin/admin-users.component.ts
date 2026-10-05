@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { debounceTime } from 'rxjs';
@@ -14,7 +15,7 @@ import { t, TranslatePipe } from '../../core/i18n';
 
 @Component({
   selector: 'app-admin-users',
-  imports: [FormsModule, TimeAgoPipe, ConfirmComponent, TranslatePipe],
+  imports: [IconComponent, FormsModule, TimeAgoPipe, ConfirmComponent, TranslatePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -55,9 +56,9 @@ import { t, TranslatePipe } from '../../core/i18n';
                   </td>
                   <td class="num hide-mobile">{{ u.expenseCount }}</td>
                   <td class="muted nowrap hide-mobile">{{ u.createdAt | timeAgo }}</td>
-                  <td class="muted nowrap cell-meta">⏱ {{ u.lastLoginAt | timeAgo }}</td>
+                  <td class="muted nowrap cell-meta">{{ u.lastLoginAt | timeAgo }}</td>
                   <td class="actions">
-                    <button class="icon-btn danger" [title]="'web.admin.deleteUser' | t" (click)="toDelete.set(u)" [disabled]="u.id === me()">🗑️</button>
+                    <button class="icon-btn danger" [title]="'web.admin.deleteUser' | t" (click)="toDelete.set(u)" [disabled]="u.id === me()"><app-icon name="trash" [size]="16" /></button>
                   </td>
                 </tr>
               } @empty {

@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, Tabs } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import { Ellipsis, House, Lightbulb, LucideIcon, Plus, Receipt } from 'lucide-react-native';
+import { ColorValue, Pressable, View } from 'react-native';
 import { api } from '@/api/endpoints';
 import { qk } from '@/api/queryKeys';
 import { t, useI18n } from '@/i18n';
 import { fonts, useTheme } from '@/theme/theme';
 import { haptics } from '@/utils/haptics';
 
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return <Text style={{ fontSize: 21, opacity: focused ? 1 : 0.55 }}>{icon}</Text>;
+function TabIcon({ Icon, color }: { Icon: LucideIcon; color: ColorValue }) {
+  return <Icon size={22} color={String(color)} strokeWidth={1.75} />;
 }
 
 function AddButton() {
-  const { colors } = useTheme();
+  const { colors, name } = useTheme();
   return (
     <Pressable
       accessibilityLabel={t('tabs.addExpense')}
@@ -21,27 +21,25 @@ function AddButton() {
         haptics.tap();
         router.push('/expense-form');
       }}
-      style={({ pressed }) => ({ flex: 1, alignItems: 'center', justifyContent: 'center', transform: [{ scale: pressed ? 0.92 : 1 }] })}
+      style={({ pressed }) => ({ flex: 1, alignItems: 'center', justifyContent: 'center', transform: [{ scale: pressed ? 0.94 : 1 }] })}
     >
-      <LinearGradient
-        colors={colors.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      <View
         style={{
-          width: 52,
-          height: 52,
-          borderRadius: 18,
+          width: 46,
+          height: 46,
+          borderRadius: 14,
           alignItems: 'center',
           justifyContent: 'center',
-          marginTop: -14,
-          shadowColor: colors.violet,
-          shadowOpacity: 0.6,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: 4 },
+          backgroundColor: colors.primary,
+          shadowColor: '#000',
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
         }}
       >
-        <Text style={{ color: '#fff', fontSize: 28, lineHeight: 30, fontFamily: fonts.semibold }}>＋</Text>
-      </LinearGradient>
+        <Plus size={24} strokeWidth={2.25} color={name === 'dark' ? '#06140e' : '#fff'} />
+      </View>
     </Pressable>
   );
 }
@@ -62,15 +60,15 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} /> }} />
-      <Tabs.Screen name="expenses" options={{ title: t('tabs.expenses'), tabBarIcon: ({ focused }) => <TabIcon icon="🧾" focused={focused} /> }} />
+      <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: ({ color }) => <TabIcon Icon={House} color={color} /> }} />
+      <Tabs.Screen name="expenses" options={{ title: t('tabs.expenses'), tabBarIcon: ({ color }) => <TabIcon Icon={Receipt} color={color} /> }} />
       <Tabs.Screen name="add" options={{ title: '', tabBarButton: () => <AddButton /> }} />
-      <Tabs.Screen name="advisor" options={{ title: t('tabs.ai'), tabBarIcon: ({ focused }) => <TabIcon icon="✨" focused={focused} /> }} />
+      <Tabs.Screen name="advisor" options={{ title: t('tabs.ai'), tabBarIcon: ({ color }) => <TabIcon Icon={Lightbulb} color={color} /> }} />
       <Tabs.Screen
         name="more"
         options={{
           title: t('tabs.more'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="☰" focused={focused} />,
+          tabBarIcon: ({ color }) => <TabIcon Icon={Ellipsis} color={color} />,
           tabBarBadge: unread > 0 ? (unread > 9 ? '9+' : unread) : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.danger, fontSize: 10 },
         }}

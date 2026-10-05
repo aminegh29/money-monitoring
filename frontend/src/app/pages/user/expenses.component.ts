@@ -1,11 +1,12 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, Subject } from 'rxjs';
 import { ApiService, downloadBlob } from '../../core/api.service';
 import { errorMessage } from '../../core/auth.interceptor';
 import { AuthService } from '../../core/auth.service';
-import { Category, Expense, PAYMENT_METHODS } from '../../core/models';
+import { Category, Expense } from '../../core/models';
 import { RealtimeService } from '../../core/realtime.service';
 import { Months, ToastService } from '../../core/ui.service';
 import { ExpenseFormComponent } from '../../shared/expense-form.component';
@@ -16,7 +17,7 @@ import { catName, CategoryNamePipe, I18nService, t, tList, TranslatePipe } from 
 
 @Component({
   selector: 'app-expenses',
-  imports: [FormsModule, MonthPickerComponent, MoneyPipe, ExpenseFormComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe, LocalDatePipe],
+  imports: [IconComponent, FormsModule, MonthPickerComponent, MoneyPipe, ExpenseFormComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe, LocalDatePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -26,19 +27,19 @@ import { catName, CategoryNamePipe, I18nService, t, tList, TranslatePipe } from 
         </div>
         <div class="header-actions">
           <app-month-picker [(month)]="month" />
-          <button class="btn btn-ghost" (click)="exportCsv()" [disabled]="!expenses().length">⬇ CSV</button>
-          <button class="btn btn-primary hide-mobile" (click)="openForm(null)">＋ {{ 'expenses.newTitle' | t }}</button>
+          <button class="btn btn-ghost" (click)="exportCsv()" [disabled]="!expenses().length"><app-icon name="download" [size]="16" />CSV</button>
+          <button class="btn btn-primary hide-mobile" (click)="openForm(null)"><app-icon name="plus" [size]="16" />{{ 'expenses.newTitle' | t }}</button>
         </div>
       </div>
 
       <div class="card">
         <div class="total-strip">
-          <div><span class="eyebrow">{{ 'expenses.spentIn' | t: { month: monthLabel() } }}</span><div class="total num gradient-text">{{ total() | money: auth.currency() }}</div></div>
-          <span class="badge badge-primary">{{ 'common.transactions' | t: { n: expenses().length } }}</span>
+          <div><span class="muted small">{{ 'expenses.spentIn' | t: { month: monthLabel() } }}</span><div class="total num">{{ total() | money: auth.currency() }}</div></div>
+          <span class="badge">{{ 'common.transactions' | t: { n: expenses().length } }}</span>
         </div>
         <div class="filters">
           <div class="search">
-            <span>🔎</span>
+            <app-icon name="search" [size]="16" />
             <input class="input" [placeholder]="'expenses.search' | t" [ngModel]="search()" (ngModelChange)="search$.next($event)" />
           </div>
           <select class="input cat-filter" [ngModel]="categoryId()" (ngModelChange)="categoryId.set($event)">
@@ -59,13 +60,13 @@ import { catName, CategoryNamePipe, I18nService, t, tList, TranslatePipe } from 
                 @for (e of expenses(); track e.id) {
                   <tr [class.flash]="flashId() === e.id">
                     <td class="cell-main"><b>{{ e.description }}</b></td>
-                    <td class="cell-meta"><span class="cat-chip"><span class="cat-dot" [style.background]="e.category.color + '22'" [style.border-color]="e.category.color + '55'">{{ e.category.icon }}</span>{{ e.category.name | cat }}</span></td>
+                    <td class="cell-meta"><span class="cat-chip"><span class="cat-dot" [style.background]="e.category.color + '1f'">{{ e.category.icon }}</span>{{ e.category.name | cat }}</span></td>
                     <td class="nowrap muted cell-meta">{{ e.date | date2: 'weekday' }}</td>
-                    <td class="hide-mobile"><span class="badge">{{ methodIcon(e.paymentMethod) }} {{ 'pm.' + e.paymentMethod | t }}</span></td>
+                    <td class="hide-mobile"><span class="muted">{{ 'pm.' + e.paymentMethod | t }}</span></td>
                     <td class="text-right nowrap num cell-amount"><b>{{ e.amount | money: auth.currency() }}</b></td>
                     <td class="actions">
-                      <button class="icon-btn" [title]="'common.edit' | t" (click)="openForm(e)">✏️</button>
-                      <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(e)">🗑️</button>
+                      <button class="icon-btn" [title]="'common.edit' | t" (click)="openForm(e)"><app-icon name="pencil" [size]="16" /></button>
+                      <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(e)"><app-icon name="trash" [size]="16" /></button>
                     </td>
                   </tr>
                 }
@@ -74,7 +75,7 @@ import { catName, CategoryNamePipe, I18nService, t, tList, TranslatePipe } from 
           </div>
         } @else {
           <div class="empty-state">
-            <div class="emoji">🧾</div>
+            <div class="empty-icon"><app-icon name="receipt" [size]="22" /></div>
             <h4>{{ 'expenses.noneFound' | t }}</h4>
             <p>{{ (search() || categoryId() ? 'expenses.tryFilter' : 'expenses.addFirst') | t }}</p>
           </div>
@@ -92,11 +93,11 @@ import { catName, CategoryNamePipe, I18nService, t, tList, TranslatePipe } from 
   `,
   styles: [`
     .total-strip { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
-    .total { font-size: 30px; font-weight: 700; letter-spacing: -.03em; margin-top: 2px; }
+    .total { font-size: 26px; font-weight: 600; letter-spacing: -.02em; margin-top: 2px; }
     @media (max-width: 760px) { .cat-filter { width: 100%; } .header-actions { width: 100%; } }
-    .filters { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+    .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
     .search { flex: 1; min-width: 220px; position: relative; }
-    .search span { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+    .search app-icon { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
     .search .input { padding-inline-start: 36px; }
     .cat-filter { width: 230px; }
     tr.flash { animation: flash 1.6s ease; }
@@ -178,9 +179,6 @@ export class ExpensesComponent {
     });
   }
 
-  methodIcon(m: string) {
-    return PAYMENT_METHODS.find((p) => p.value === m)?.icon ?? '';
-  }
 
   exportCsv() {
     const rows = [tList('expenses.csvHeaders')];

@@ -86,12 +86,12 @@ import { passwordsMatch } from '../public/register.component';
           </div>
 
           <div class="card">
-            <div class="card-header"><h3>🌐 {{ 'common.language' | t }}</h3></div>
+            <div class="card-header"><h3>{{ 'common.language' | t }}</h3></div>
             <p class="muted small">{{ 'profile.languageHint' | t }}</p>
             <div class="langs">
               @for (l of languages; track l.code) {
                 <button type="button" class="lang-option" [class.selected]="i18n.lang() === l.code" (click)="auth.changeLanguage(l.code)">
-                  <span>{{ l.flag }}</span>{{ l.name }}
+                  {{ l.name }}
                 </button>
               }
             </div>
@@ -131,16 +131,17 @@ import { passwordsMatch } from '../public/register.component';
     .narrow { max-width: 1060px; }
     .profile-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
     .profile-head > div:nth-child(2) { flex: 1; }
-    .avatar { width: 64px; height: 64px; border-radius: 20px; background: var(--gradient); color: #fff; display: grid; place-items: center; font-size: 22px; font-weight: 800; }
-    .toggle { width: 48px; height: 28px; border-radius: 999px; border: none; background: var(--border); position: relative; cursor: pointer; transition: background .2s; }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--primary-soft); color: var(--primary-text); display: grid; place-items: center; font-size: 18px; font-weight: 600; }
+    .toggle { width: 40px; height: 24px; border-radius: 999px; border: none; background: var(--border-strong); position: relative; cursor: pointer; transition: background .2s; }
     .langs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .lang-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--border);
-      background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
-    .lang-option.selected { border-color: var(--primary); background: var(--primary-soft); font-weight: 600; }
-    .toggle span { position: absolute; top: 3px; inset-inline-start: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+    .lang-option { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-strong);
+      background: var(--surface); color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
+    .lang-option:hover { background: var(--surface-2); }
+    .lang-option.selected { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-text); font-weight: 500; }
+    .toggle span { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
     .toggle.on { background: var(--primary); }
-    .toggle.on span { transform: translateX(20px); }
-    :host-context([dir='rtl']) .toggle.on span { transform: translateX(-20px); }
+    .toggle.on span { transform: translateX(16px); }
+    :host-context([dir='rtl']) .toggle.on span { transform: translateX(-16px); }
     .notif { align-items: flex-start; margin: 4px 0 18px; font-size: 14px; }
     .notif small { line-height: 1.5; }
     .danger-zone { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }

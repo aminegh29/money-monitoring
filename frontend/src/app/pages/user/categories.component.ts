@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -14,7 +15,7 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6'
 
 @Component({
   selector: 'app-categories',
-  imports: [ReactiveFormsModule, ModalComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe],
+  imports: [IconComponent, ReactiveFormsModule, ModalComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -22,7 +23,7 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6'
           <h1>{{ 'categories.title' | t }}</h1>
           <p>{{ 'categories.subtitle' | t }}</p>
         </div>
-        <button class="btn btn-primary" (click)="open(null)">＋ {{ 'categories.new' | t }}</button>
+        <button class="btn btn-primary" (click)="open(null)"><app-icon name="plus" [size]="16" />{{ 'categories.new' | t }}</button>
       </div>
 
       @if (custom().length) {
@@ -33,8 +34,8 @@ const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6'
               <span class="cat-dot big" [style.background]="c.color + '22'">{{ c.icon }}</span>
               <div class="info"><b>{{ c.name }}</b><span class="badge" [class.badge-primary]="c.essential">{{ (c.essential ? 'categories.essential' : 'categories.nonEssential') | t }}</span></div>
               <div class="acts">
-                <button class="icon-btn" [title]="'common.edit' | t" (click)="open(c)">✏️</button>
-                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(c)">🗑️</button>
+                <button class="icon-btn" [title]="'common.edit' | t" (click)="open(c)"><app-icon name="pencil" [size]="16" /></button>
+                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(c)"><app-icon name="trash" [size]="16" /></button>
               </div>
             </div>
           }

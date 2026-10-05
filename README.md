@@ -4,7 +4,7 @@ Track your expenses in real time, set budgets, and get **free AI advice** on how
 Download a **PDF report every month** and an **annual PDF report** with AI suggestions for the next year.
 
 - **Backend:** Spring Boot 3.4 (Java 17), Spring Security + JWT, JPA/H2, WebSocket (STOMP), OpenPDF
-- **Frontend:** Angular 19 (standalone components + signals), Chart.js, STOMP.js, "Neon Glass" design system (dark & light)
+- **Frontend:** Angular 19 (standalone components + signals), Chart.js, STOMP.js, Lucide icons, a calm design system with one brand green (light by default, dark mode)
 - **Mobile:** iOS & Android apps built from the same code with Capacitor 7
 
 ---
@@ -274,7 +274,7 @@ mobile/src/                Expo (React Native) app for Expo Go
 ├── auth/          Session (token in the iOS Keychain via SecureStore)
 ├── realtime/      STOMP live updates → React Query refreshes
 ├── components/    UI kit, SVG charts, month picker, markdown, toasts
-└── theme/         Neon Glass colours (dark + light)
+└── theme/         Colours shared with the web app (light + dark)
 ```
 
 ### Main API endpoints

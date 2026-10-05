@@ -57,8 +57,8 @@ export function Card({ children, style, glow }: { children: ReactNode; style?: S
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.surfaceSolid, borderColor: glow ? alpha(glow, '55') : colors.border },
-        glow ? { shadowColor: glow, shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 0 } } : null,
+        // "glow" only tints the border now (no coloured shadows).
+        { backgroundColor: colors.surfaceSolid, borderColor: glow && glow !== colors.violet ? alpha(glow, '66') : colors.border },
         style,
       ]}
     >

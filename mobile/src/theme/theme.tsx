@@ -3,69 +3,70 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useState } fr
 
 type Gradient = readonly [string, string, string];
 
-// "Neon Glass" tokens from frontend/src/styles.scss.
-const dark = {
-  bg: '#04050d',
-  bg2: '#080a18',
-  surface: 'rgba(255,255,255,0.045)',
-  surfaceSolid: '#0d1022',
-  surface2: 'rgba(255,255,255,0.06)',
-  surface3: 'rgba(255,255,255,0.09)',
-  border: 'rgba(255,255,255,0.08)',
-  borderStrong: 'rgba(255,255,255,0.16)',
-  text: '#eef1ff',
-  textMuted: '#8b93b8',
-  textDim: '#5d6488',
-  cyan: '#22d3ee',
-  violet: '#8b5cf6',
-  magenta: '#e879f9',
-  primary: '#8b7bff',
-  primarySoft: 'rgba(139,123,255,0.14)',
-  primaryText: '#b4a9ff',
-  success: '#34f5b5',
-  successSoft: 'rgba(52,245,181,0.12)',
-  danger: '#ff5c8a',
-  dangerSoft: 'rgba(255,92,138,0.13)',
-  warning: '#ffc94d',
-  warningSoft: 'rgba(255,201,77,0.13)',
-  info: '#38bdf8',
-  infoSoft: 'rgba(56,189,248,0.13)',
-  gradient: ['#22d3ee', '#8b5cf6', '#e879f9'] as Gradient,
-  gradientSoft: ['rgba(34,211,238,0.18)', 'rgba(139,92,246,0.18)', 'rgba(232,121,249,0.18)'] as Gradient,
-  gridLine: 'rgba(139,147,184,0.12)',
+// Same tokens as the web app (frontend/src/styles.scss): calm neutrals and one brand green.
+// "gradient" entries are solid on purpose (no neon gradients); the names are kept so components stay unchanged.
+const light = {
+  bg: '#f6f7f5',
+  bg2: '#eef0ed',
+  surface: '#ffffff',
+  surfaceSolid: '#ffffff',
+  surface2: '#f2f4f1',
+  surface3: '#e8ebe7',
+  border: '#e3e6e2',
+  borderStrong: '#cdd3cd',
+  text: '#16201b',
+  textMuted: '#5a6660',
+  textDim: '#8c9690',
+  cyan: '#2a5f9e',
+  violet: '#0f6e4f',
+  magenta: '#7a6bb0',
+  primary: '#0f6e4f',
+  primarySoft: '#e5f1eb',
+  primaryText: '#0d6648',
+  success: '#17794d',
+  successSoft: '#e6f3ec',
+  danger: '#c0352b',
+  dangerSoft: '#fbecea',
+  warning: '#a86200',
+  warningSoft: '#fcf1df',
+  info: '#2a5f9e',
+  infoSoft: '#e8eff8',
+  gradient: ['#0f6e4f', '#0f6e4f', '#0f6e4f'] as Gradient,
+  gradientSoft: ['#e5f1eb', '#e5f1eb', '#e5f1eb'] as Gradient,
+  gridLine: '#e3e6e2',
 };
 
-export type Colors = typeof dark;
+export type Colors = typeof light;
 
-const light: Colors = {
-  bg: '#eef0fb',
-  bg2: '#e6e9f8',
-  surface: 'rgba(255,255,255,0.62)',
-  surfaceSolid: '#ffffff',
-  surface2: 'rgba(255,255,255,0.75)',
-  surface3: 'rgba(15,23,60,0.06)',
-  border: 'rgba(30,41,99,0.09)',
-  borderStrong: 'rgba(30,41,99,0.18)',
-  text: '#0b1030',
-  textMuted: '#5b6390',
-  textDim: '#8a91b5',
-  cyan: '#06b6d4',
-  violet: '#7c3aed',
-  magenta: '#d946ef',
-  primary: '#6d5cf6',
-  primarySoft: 'rgba(109,92,246,0.1)',
-  primaryText: '#5b47e8',
-  success: '#059669',
-  successSoft: 'rgba(5,150,105,0.1)',
-  danger: '#e11d58',
-  dangerSoft: 'rgba(225,29,88,0.09)',
-  warning: '#d97706',
-  warningSoft: 'rgba(217,119,6,0.1)',
-  info: '#0284c7',
-  infoSoft: 'rgba(2,132,199,0.1)',
-  gradient: ['#06b6d4', '#7c3aed', '#d946ef'] as Gradient,
-  gradientSoft: ['rgba(34,211,238,0.18)', 'rgba(139,92,246,0.18)', 'rgba(232,121,249,0.18)'] as Gradient,
-  gridLine: 'rgba(30,41,99,0.08)',
+const dark: Colors = {
+  bg: '#0f1211',
+  bg2: '#131716',
+  surface: '#161a19',
+  surfaceSolid: '#161a19',
+  surface2: '#1c211f',
+  surface3: '#242a28',
+  border: '#262c2a',
+  borderStrong: '#363e3b',
+  text: '#e7ebe9',
+  textMuted: '#9aa49f',
+  textDim: '#6c7671',
+  cyan: '#6fa3dc',
+  violet: '#3aa077',
+  magenta: '#9d8fd4',
+  primary: '#3aa077',
+  primarySoft: 'rgba(58,160,119,0.14)',
+  primaryText: '#5cc198',
+  success: '#4cb583',
+  successSoft: 'rgba(76,181,131,0.13)',
+  danger: '#ec6a5e',
+  dangerSoft: 'rgba(236,106,94,0.13)',
+  warning: '#e0a548',
+  warningSoft: 'rgba(224,165,72,0.13)',
+  info: '#6fa3dc',
+  infoSoft: 'rgba(111,163,220,0.13)',
+  gradient: ['#3aa077', '#3aa077', '#3aa077'] as Gradient,
+  gradientSoft: ['rgba(58,160,119,0.14)', 'rgba(58,160,119,0.14)', 'rgba(58,160,119,0.14)'] as Gradient,
+  gridLine: '#262c2a',
 };
 
 export const fonts = {
@@ -73,11 +74,11 @@ export const fonts = {
   medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
-  display: 'SpaceGrotesk_700Bold',
-  displayMedium: 'SpaceGrotesk_500Medium',
+  display: 'Inter_600SemiBold',
+  displayMedium: 'Inter_500Medium',
 };
 
-export const radius = { lg: 22, md: 14, sm: 10, pill: 999 };
+export const radius = { lg: 14, md: 10, sm: 8, pill: 999 };
 
 type ThemeName = 'dark' | 'light';
 const THEME_KEY = 'mm_theme';
@@ -88,11 +89,11 @@ interface ThemeValue {
   toggle: () => void;
 }
 
-const ThemeContext = createContext<ThemeValue>({ name: 'dark', colors: dark, toggle: () => {} });
+const ThemeContext = createContext<ThemeValue>({ name: 'light', colors: light, toggle: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // The neon theme is designed dark-first, like the web app.
-  const [name, setName] = useState<ThemeName>('dark');
+  // Light by default, like the web app; the user's choice is remembered.
+  const [name, setName] = useState<ThemeName>('light');
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY)

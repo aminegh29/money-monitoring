@@ -6,10 +6,11 @@ import { errorMessage } from '../../core/auth.interceptor';
 import { AuthService } from '../../core/auth.service';
 import { t, TranslatePipe } from '../../core/i18n';
 import { AuthLayoutComponent } from './auth-layout.component';
+import { IconComponent } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, TranslatePipe, IconComponent],
   template: `
     <app-auth-layout [title]="'auth.welcomeBack' | t" [subtitle]="'auth.signInSubtitle' | t">
       @if (reason() === 'expired') { <div class="alert alert-info">{{ 'auth.expired' | t }}</div> }
@@ -29,7 +30,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
           </div>
           <div class="input-group">
             <input id="password" class="input" [type]="show() ? 'text' : 'password'" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
-            <button type="button" class="icon-btn addon" (click)="show.set(!show())" [attr.aria-label]="show() ? 'Hide password' : 'Show password'">{{ show() ? '🙈' : '👁️' }}</button>
+            <button type="button" class="icon-btn addon" (click)="show.set(!show())" [attr.aria-label]="show() ? 'Hide password' : 'Show password'"><app-icon [name]="show() ? 'eye-off' : 'eye'" [size]="17" /></button>
           </div>
         </div>
         <button class="btn btn-primary btn-lg btn-block" type="submit" [disabled]="form.invalid || loading()">

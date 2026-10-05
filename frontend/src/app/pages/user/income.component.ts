@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ import { I18nService, t, tList, TranslatePipe } from '../../core/i18n';
 
 @Component({
   selector: 'app-income',
-  imports: [ReactiveFormsModule, RouterLink, MonthPickerComponent, MoneyPipe, ModalComponent, ConfirmComponent, TranslatePipe, LocalDatePipe],
+  imports: [IconComponent, ReactiveFormsModule, RouterLink, MonthPickerComponent, MoneyPipe, ModalComponent, ConfirmComponent, TranslatePipe, LocalDatePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -25,7 +26,7 @@ import { I18nService, t, tList, TranslatePipe } from '../../core/i18n';
         </div>
         <div class="header-actions">
           <app-month-picker [(month)]="month" />
-          <button class="btn btn-primary" (click)="open(null)">＋ {{ 'income.addTitle' | t }}</button>
+          <button class="btn btn-primary" (click)="open(null)"><app-icon name="plus" [size]="16" />{{ 'income.addTitle' | t }}</button>
         </div>
       </div>
 
@@ -50,12 +51,12 @@ import { I18nService, t, tList, TranslatePipe } from '../../core/i18n';
               <tbody>
                 @for (i of incomes(); track i.id) {
                   <tr>
-                    <td class="cell-main"><span class="cat-chip"><span class="cat-dot" style="background: var(--success-soft)">💵</span><b>{{ i.source }}</b></span></td>
+                    <td class="cell-main"><span class="cat-chip"><span class="cat-dot" style="background: var(--success-soft); color: var(--success)"><app-icon name="banknote" [size]="16" /></span><b>{{ i.source }}</b></span></td>
                     <td class="muted cell-meta">{{ i.date | date2 }}</td>
                     <td class="text-right num text-success cell-amount"><b>+{{ i.amount | money: auth.currency() }}</b></td>
                     <td class="actions">
-                      <button class="icon-btn" [title]="'common.edit' | t" (click)="open(i)">✏️</button>
-                      <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(i)">🗑️</button>
+                      <button class="icon-btn" [title]="'common.edit' | t" (click)="open(i)"><app-icon name="pencil" [size]="16" /></button>
+                      <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(i)"><app-icon name="trash" [size]="16" /></button>
                     </td>
                   </tr>
                 }
@@ -63,7 +64,7 @@ import { I18nService, t, tList, TranslatePipe } from '../../core/i18n';
             </table>
           </div>
         } @else {
-          <div class="empty-state"><div class="emoji">💵</div><h4>{{ 'income.none' | t }}</h4><p>{{ 'income.noneHint' | t }}</p></div>
+          <div class="empty-state"><div class="empty-icon"><app-icon name="banknote" [size]="22" /></div><h4>{{ 'income.none' | t }}</h4><p>{{ 'income.noneHint' | t }}</p></div>
         }
       </div>
     </div>

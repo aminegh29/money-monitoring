@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { errorMessage } from '../../core/auth.interceptor';
@@ -8,12 +9,12 @@ import { AuthLayoutComponent } from './auth-layout.component';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, TranslatePipe],
+  imports: [IconComponent, ReactiveFormsModule, RouterLink, AuthLayoutComponent, TranslatePipe],
   template: `
     <app-auth-layout [title]="'auth.forgotTitle' | t" [subtitle]="'auth.forgotSubtitle' | t">
       @if (sent()) {
         <div class="sent">
-          <div class="emoji">📬</div>
+          <div class="empty-icon"><app-icon name="mail" [size]="22" /></div>
           <h3>{{ 'web.forgot.checkInbox' | t }}</h3>
           <p class="muted">{{ 'web.forgot.sentTo' | t: { email: form.value.email ?? '' } }}</p>
           <p class="muted small hint">{{ 'auth.spamHint' | t }}</p>
@@ -37,7 +38,7 @@ import { AuthLayoutComponent } from './auth-layout.component';
   styles: [`
     .back { text-align: center; margin-top: 22px; }
     .sent { text-align: center; display: grid; gap: 10px; }
-    .sent .emoji { font-size: 48px; }
+    .sent .empty-icon { margin: 0 auto 4px; background: var(--primary-soft); color: var(--primary-text); }
     .hint { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
   `],
 })

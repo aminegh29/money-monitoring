@@ -1,4 +1,5 @@
 import { DecimalPipe } from '@angular/common';
+import { IconComponent } from '../../shared/icon.component';
 import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -14,15 +15,15 @@ import { LocalDatePipe, MoneyPipe } from '../../shared/pipes';
 
 @Component({
   selector: 'app-goals',
-  imports: [RouterLink, MoneyPipe, LocalDatePipe, DecimalPipe, TranslatePipe, GoalFormComponent],
+  imports: [IconComponent, RouterLink, MoneyPipe, LocalDatePipe, DecimalPipe, TranslatePipe, GoalFormComponent],
   template: `
     <div class="page">
       <div class="page-header">
         <div>
-          <h1>🎯 {{ 'goals.title' | t }}</h1>
+          <h1>{{ 'goals.title' | t }}</h1>
           <p>{{ 'goals.subtitle' | t }}</p>
         </div>
-        <button class="btn btn-primary" (click)="open(null)">＋ {{ 'goals.new' | t }}</button>
+        <button class="btn btn-primary" (click)="open(null)"><app-icon name="plus" [size]="16" />{{ 'goals.new' | t }}</button>
       </div>
 
       @if (loading()) {
@@ -38,7 +39,7 @@ import { LocalDatePipe, MoneyPipe } from '../../shared/pipes';
               <h3>{{ g.name }}</h3>
               <div class="amounts"><b class="num">{{ g.savedAmount | money: cur() }}</b>
                 <span class="muted">{{ 'budgets.of' | t: { amount: (g.targetAmount | money: cur()) } }}</span></div>
-              <div class="progress lg"><div [style.width.%]="g.percent" style="background: var(--gradient); color: var(--violet)"></div></div>
+              <div class="progress lg"><div [style.width.%]="g.percent" style="background: var(--primary)"></div></div>
               <div class="row-between small">
                 <span class="muted">{{ 'goals.by' | t: { date: (g.deadline | date2) } }}</span>
                 <b class="num">{{ g.percent | number: '1.0-0' }}%</b>
@@ -52,10 +53,10 @@ import { LocalDatePipe, MoneyPipe } from '../../shared/pipes';
         </div>
       } @else {
         <div class="card empty-state">
-          <div class="emoji">🎯</div>
+          <div class="empty-icon"><app-icon name="target" [size]="22" /></div>
           <h4>{{ 'goals.none' | t }}</h4>
           <p>{{ 'goals.noneHint' | t }}</p>
-          <button class="btn btn-primary mt" (click)="open(null)">＋ {{ 'goals.new' | t }}</button>
+          <button class="btn btn-primary mt" (click)="open(null)"><app-icon name="plus" [size]="16" />{{ 'goals.new' | t }}</button>
         </div>
       }
     </div>
@@ -67,12 +68,12 @@ import { LocalDatePipe, MoneyPipe } from '../../shared/pipes';
   styles: [`
     .goal { display: grid; gap: 10px; color: var(--text); }
     .goal:hover { text-decoration: none; }
-    .g-icon { font-size: 30px; }
-    .goal h3 { font-size: 18px; }
+    .g-icon { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; background: var(--surface-2); }
+    .goal h3 { font-size: 16px; }
     .amounts { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-    .amounts b { font-size: 22px; }
-    .progress.lg { height: 10px; }
-    .need { color: var(--primary-text); font-weight: 600; }
+    .amounts b { font-size: 20px; font-weight: 600; }
+    .progress.lg { height: 8px; }
+    .need { color: var(--primary-text); font-weight: 500; }
   `],
 })
 export class GoalsComponent {

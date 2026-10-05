@@ -1,0 +1,31 @@
+# Runs the backend on your own server (Oracle Cloud, Hetzner…) behind Caddy, which adds HTTPS automatically.
+# On the server, in this folder:
+#   cp .env.example .env     then fill in the values (nano .env)
+#   docker compose up -d --build
+services:
+  api:
+    build: ../../backend
+    env_file: .env
+    restart: unless-stopped
+    # Only Caddy talks to the backend; port 8080 is not opened to the internet.
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # HTTPS certificates
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  caddy_data:
+  caddy_config:

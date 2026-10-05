@@ -4,17 +4,20 @@ import { I18nService, TranslatePipe } from '../../core/i18n';
 import { ThemeService } from '../../core/ui.service';
 import { LogoComponent } from '../../shared/fx';
 import { LanguageSelectComponent } from '../../shared/language-select.component';
+import { IconComponent } from '../../shared/icon.component';
 
 /** Privacy policy and terms of use. The route data picks the page ('privacy' | 'terms'). */
 @Component({
   selector: 'app-legal',
-  imports: [RouterLink, LogoComponent, TranslatePipe, LanguageSelectComponent],
+  imports: [RouterLink, LogoComponent, TranslatePipe, LanguageSelectComponent, IconComponent],
   template: `
     <header class="nav">
-      <a routerLink="/" class="brand"><app-logo [size]="34" /><span>Money<b class="gradient-text">Monitor</b></span></a>
+      <a routerLink="/" class="brand"><app-logo [size]="28" /><span>Money Monitor</span></a>
       <div class="nav-actions">
         <app-language-select />
-        <button class="icon-btn" (click)="theme.toggle()">{{ theme.theme() === 'light' ? '🌙' : '☀️' }}</button>
+        <button class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="(theme.theme() === 'light' ? 'web.nav.darkMode' : 'web.nav.lightMode') | t">
+          <app-icon [name]="theme.theme() === 'light' ? 'moon' : 'sun'" [size]="17" />
+        </button>
       </div>
     </header>
 
@@ -45,8 +48,8 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
   styles: [`
     :host { display: block; min-height: 100vh; }
     .nav { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + var(--safe-top)) 6vw 16px; border-bottom: 1px solid var(--border);
-      background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); position: sticky; top: 0; z-index: 10; }
-    .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 19px; color: var(--text); }
+      background: var(--bg); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; color: var(--text); }
     .brand:hover { text-decoration: none; }
     .nav-actions { display: flex; gap: 10px; align-items: center; }
     .doc { max-width: 780px; margin: 0 auto; padding: 50px 24px 40px; }

@@ -5,7 +5,7 @@ services:
     name: money-monitor-api
     runtime: docker
     rootDir: backend
-    plan: free
+    plan: starter # always on ($7/month); "free" sleeps after 15 minutes without visitors
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: postgres

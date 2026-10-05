@@ -52,7 +52,7 @@ import { Native } from '../core/native';
           <div class="form-field">
             <label for="method">{{ 'expenses.paymentMethod' | t }}</label>
             <select id="method" class="input" formControlName="paymentMethod">
-              @for (m of methods; track m.value) { <option [value]="m.value">{{ m.icon }} {{ 'pm.' + m.value | t }}</option> }
+              @for (m of methods; track m.value) { <option [value]="m.value">{{ 'pm.' + m.value | t }}</option> }
             </select>
           </div>
         </div>

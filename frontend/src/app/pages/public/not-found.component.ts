@@ -15,9 +15,9 @@ import { TranslatePipe } from '../../core/i18n';
     </div>
   `,
   styles: [`
-    .nf { min-height: 100vh; display: grid; place-content: center; text-align: center; gap: 14px; padding: 24px; }
-    .code { font-size: 110px; font-weight: 800; letter-spacing: -.05em; background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; }
-    h1 { font-size: 26px; }
+    .nf { min-height: 100vh; display: grid; place-content: center; text-align: center; gap: 10px; padding: 24px; }
+    .code { font-size: 14px; font-weight: 600; color: var(--primary-text); letter-spacing: .04em; }
+    h1 { font-size: 28px; }
     .btn { justify-self: center; margin-top: 8px; }
   `],
 })

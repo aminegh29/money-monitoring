@@ -1,5 +1,5 @@
 {
-  "background_color": "#04050d",
+  "background_color": "#f6f7f5",
   "icons": [
     {
       "src": "icons/icon-48.webp",
@@ -48,5 +48,5 @@
   "short_name": "Money Monitor",
   "start_url": "/app/dashboard",
   "display": "standalone",
-  "theme_color": "#04050d"
+  "theme_color": "#0f6e4f"
 }

@@ -1,15 +1,16 @@
 import { Component, HostListener, input, output } from '@angular/core';
 import { TranslatePipe } from '../core/i18n';
+import { IconComponent } from './icon.component';
 
 @Component({
   selector: 'app-modal',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, IconComponent],
   template: `
     <div class="modal-backdrop" (click)="closed.emit()">
       <div class="modal" [style.max-width.px]="width()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <div class="modal-header">
           <h3>{{ title() }}</h3>
-          <button class="icon-btn" (click)="closed.emit()" [attr.aria-label]="'web.modal.close' | t">✕</button>
+          <button class="icon-btn" (click)="closed.emit()" [attr.aria-label]="'web.modal.close' | t"><app-icon name="x" [size]="18" /></button>
         </div>
         <div class="modal-body"><ng-content /></div>
       </div>

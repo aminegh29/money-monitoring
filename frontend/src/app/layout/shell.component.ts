@@ -11,6 +11,7 @@ import { t, TranslatePipe } from '../core/i18n';
 import { ExpenseFormComponent } from '../shared/expense-form.component';
 import { LanguageSelectComponent } from '../shared/language-select.component';
 import { LogoComponent } from '../shared/fx';
+import { IconComponent, IconName } from '../shared/icon.component';
 import { TimeAgoPipe } from '../shared/pipes';
 import { Native } from '../core/native';
 
@@ -18,13 +19,13 @@ interface NavItem {
   path: string;
   /** Translation key. */
   label: string;
-  icon: string;
+  icon: IconName;
   exact?: boolean;
 }
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TimeAgoPipe, ExpenseFormComponent, LogoComponent, TranslatePipe, LanguageSelectComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TimeAgoPipe, ExpenseFormComponent, LogoComponent, TranslatePipe, LanguageSelectComponent, IconComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -47,31 +48,31 @@ export class ShellComponent {
   );
 
   readonly financeNav: NavItem[] = [
-    { path: '/app/dashboard', label: 'web.nav.dashboard', icon: '📊' },
-    { path: '/app/expenses', label: 'expenses.title', icon: '💸' },
-    { path: '/app/income', label: 'income.title', icon: '💰' },
-    { path: '/app/budgets', label: 'budgets.title', icon: '📊' },
-    { path: '/app/goals', label: 'goals.title', icon: '🎯' },
-    { path: '/app/categories', label: 'categories.title', icon: '🏷️' },
+    { path: '/app/dashboard', label: 'web.nav.dashboard', icon: 'layout-dashboard' },
+    { path: '/app/expenses', label: 'expenses.title', icon: 'receipt' },
+    { path: '/app/income', label: 'income.title', icon: 'banknote' },
+    { path: '/app/budgets', label: 'budgets.title', icon: 'chart-pie' },
+    { path: '/app/goals', label: 'goals.title', icon: 'target' },
+    { path: '/app/categories', label: 'categories.title', icon: 'tags' },
   ];
   readonly insightsNav: NavItem[] = [
-    { path: '/app/advisor', label: 'web.nav.advisor', icon: '✨' },
-    { path: '/app/reports', label: 'web.nav.reports', icon: '📄' },
+    { path: '/app/advisor', label: 'web.nav.advisor', icon: 'lightbulb' },
+    { path: '/app/reports', label: 'web.nav.reports', icon: 'file-text' },
   ];
   readonly adminNav: NavItem[] = [
-    { path: '/admin', label: 'web.nav.overview', icon: '🛡️', exact: true },
-    { path: '/admin/users', label: 'web.nav.users', icon: '👥' },
+    { path: '/admin', label: 'web.nav.overview', icon: 'shield-check', exact: true },
+    { path: '/admin/users', label: 'web.nav.users', icon: 'users' },
   ];
 
   /** Everything that doesn't fit in the mobile tab bar. */
   readonly moreNav = computed<NavItem[]>(() => [
-    { path: '/app/goals', label: 'goals.title', icon: '🎯' },
-    { path: '/app/income', label: 'income.title', icon: '💰' },
-    { path: '/app/budgets', label: 'budgets.title', icon: '📊' },
-    { path: '/app/categories', label: 'categories.title', icon: '🏷️' },
-    { path: '/app/reports', label: 'web.nav.reportsShort', icon: '📄' },
-    { path: '/app/notifications', label: 'web.nav.alerts', icon: '🔔' },
-    { path: '/app/profile', label: 'web.nav.profileShort', icon: '⚙️' },
+    { path: '/app/goals', label: 'goals.title', icon: 'target' },
+    { path: '/app/income', label: 'income.title', icon: 'banknote' },
+    { path: '/app/budgets', label: 'budgets.title', icon: 'chart-pie' },
+    { path: '/app/categories', label: 'categories.title', icon: 'tags' },
+    { path: '/app/reports', label: 'web.nav.reportsShort', icon: 'file-text' },
+    { path: '/app/notifications', label: 'web.nav.alerts', icon: 'bell' },
+    { path: '/app/profile', label: 'web.nav.profileShort', icon: 'settings' },
     ...(this.auth.isAdmin() ? this.adminNav : []),
   ]);
 
@@ -116,8 +117,8 @@ export class ShellComponent {
     this.api.markAllRead().subscribe(() => this.notifications.update((list) => list.map((x) => ({ ...x, read: true }))));
   }
 
-  notificationIcon(n: AppNotification) {
-    return { INFO: '💡', WARNING: '⚠️', SUCCESS: '🎉', REPORT: '📄' }[n.type];
+  notificationIcon(n: AppNotification): IconName {
+    return ({ INFO: 'info', WARNING: 'triangle-alert', SUCCESS: 'circle-check', REPORT: 'file-text' } as const)[n.type];
   }
 
   openQuickAdd() {

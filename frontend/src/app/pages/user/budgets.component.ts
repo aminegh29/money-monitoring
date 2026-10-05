@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime } from 'rxjs';
@@ -15,7 +16,7 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
 
 @Component({
   selector: 'app-budgets',
-  imports: [ReactiveFormsModule, MonthPickerComponent, MoneyPipe, ModalComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe],
+  imports: [IconComponent, ReactiveFormsModule, MonthPickerComponent, MoneyPipe, ModalComponent, ConfirmComponent, TranslatePipe, CategoryNamePipe],
   template: `
     <div class="page">
       <div class="page-header">
@@ -25,8 +26,8 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
         </div>
         <div class="header-actions">
           <app-month-picker [(month)]="month" />
-          <button class="btn btn-ghost" (click)="copyPrevious()">⧉ {{ 'budgets.copy' | t }}</button>
-          <button class="btn btn-primary" (click)="open(null)">＋ {{ 'budgets.new' | t }}</button>
+          <button class="btn" (click)="copyPrevious()"><app-icon name="copy" [size]="16" />{{ 'budgets.copy' | t }}</button>
+          <button class="btn btn-primary" (click)="open(null)"><app-icon name="plus" [size]="16" />{{ 'budgets.new' | t }}</button>
         </div>
       </div>
 
@@ -43,8 +44,8 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
           <div class="row-between small">
             <span [class]="o.remaining < 0 ? 'text-danger' : 'muted'">{{ (o.remaining < 0 ? 'budgets.overBy' : 'budgets.remaining') | t: { amount: (abs(o.remaining) | money: cur()) } }}</span>
             <span>
-              <button class="icon-btn" [title]="'common.edit' | t" (click)="open(o)">✏️</button>
-              <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(o)">🗑️</button>
+              <button class="icon-btn" [title]="'common.edit' | t" (click)="open(o)"><app-icon name="pencil" [size]="16" /></button>
+              <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(o)"><app-icon name="trash" [size]="16" /></button>
             </span>
           </div>
         </div>
@@ -62,8 +63,8 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
             <div class="row-between small foot">
               <span [class]="b.remaining < 0 ? 'text-danger' : 'muted'">{{ (b.remaining < 0 ? 'budgets.overBy' : 'budgets.left') | t: { amount: (abs(b.remaining) | money: cur()) } }}</span>
               <span>
-                <button class="icon-btn" [title]="'common.edit' | t" (click)="open(b)">✏️</button>
-                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(b)">🗑️</button>
+                <button class="icon-btn" [title]="'common.edit' | t" (click)="open(b)"><app-icon name="pencil" [size]="16" /></button>
+                <button class="icon-btn danger" [title]="'common.delete' | t" (click)="toDelete.set(b)"><app-icon name="trash" [size]="16" /></button>
               </span>
             </div>
           </div>
@@ -72,7 +73,7 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
 
       @if (!budgets().length) {
         <div class="card empty-state">
-          <div class="emoji">🎯</div>
+          <div class="empty-icon"><app-icon name="gauge" [size]="22" /></div>
           <h4>{{ 'budgets.none' | t: { month: monthLabel() } }}</h4>
           <p>{{ 'budgets.noneHint' | t }}</p>
           <button class="btn btn-primary mt" (click)="open(null)">{{ 'budgets.create' | t }}</button>
@@ -86,7 +87,7 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
           <div class="form-field">
             <label>{{ 'common.category' | t }}</label>
             <select class="input" formControlName="categoryId">
-              <option [ngValue]="null">🧾 {{ 'budgets.overallChip' | t }}</option>
+              <option [ngValue]="null">{{ 'budgets.overallChip' | t }}</option>
               @for (c of categories(); track c.id) { <option [ngValue]="c.id">{{ c.icon }} {{ c.name | cat }}</option> }
             </select>
           </div>
@@ -108,17 +109,16 @@ import { CategoryNamePipe, I18nService, t, TranslatePipe } from '../../core/i18n
     }
   `,
   styles: [`
-    .overall { display: grid; gap: 14px; background-image: var(--gradient-soft); }
-    .big { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin-top: 4px; }
-    .big .muted { font-size: 16px; font-weight: 500; }
-    .progress.lg { height: 12px; }
-    .ring { --p: 0; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center;
-      background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--surface-3) 0); filter: drop-shadow(0 0 10px var(--c)); }
-    .ring span { width: 60px; height: 60px; border-radius: 50%; background: var(--surface-solid); display: grid; place-items: center; font-weight: 700; font-family: var(--font-display); }
-    .budget { display: grid; gap: 10px; transition: transform .15s; }
-    .budget:hover { transform: translateY(-2px); }
-    .budget.over { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
-    .amounts { font-size: 18px; }
+    .overall { display: grid; gap: 14px; }
+    .big { font-size: 26px; font-weight: 600; letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .big .muted { font-size: 15px; font-weight: 500; }
+    .progress.lg { height: 8px; }
+    .ring { --p: 0; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+      background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--surface-3) 0); }
+    .ring span { width: 60px; height: 60px; border-radius: 50%; background: var(--surface-solid); display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+    .budget { display: grid; gap: 10px; }
+    .budget.over { border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
+    .amounts { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
     .amounts .muted { font-size: 14px; margin-inline-start: 6px; }
     .big .muted { margin-inline-start: 6px; }
     .foot { margin-top: -4px; }

@@ -1,0 +1,6 @@
+# Caddy gets a free HTTPS certificate (Let's Encrypt) for API_DOMAIN and renews it by itself.
+# WebSockets (live updates) are forwarded automatically.
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy api:8080
+}

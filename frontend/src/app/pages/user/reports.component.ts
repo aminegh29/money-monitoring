@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { IconComponent } from '../../shared/icon.component';
 import { FormsModule } from '@angular/forms';
 import { ApiService, downloadBlob } from '../../core/api.service';
 import { Months, ToastService } from '../../core/ui.service';
@@ -8,32 +9,32 @@ import { I18nService, t, TranslatePipe } from '../../core/i18n';
 
 @Component({
   selector: 'app-reports',
-  imports: [FormsModule, MonthPickerComponent, MonthLabelPipe, TranslatePipe],
+  imports: [IconComponent, FormsModule, MonthPickerComponent, MonthLabelPipe, TranslatePipe],
   template: `
     <div class="page">
       <div class="page-header">
         <div>
           <h1>{{ 'reports.title' | t }}</h1>
           <p>{{ 'web.reports.subtitle' | t }}</p>
-          @if (i18n.lang() !== 'en') { <p class="muted small">ℹ️ {{ 'reports.englishOnly' | t }}</p> }
+          @if (i18n.lang() !== 'en') { <p class="muted small note"><app-icon name="info" [size]="14" />{{ 'reports.englishOnly' | t }}</p> }
         </div>
       </div>
 
       <div class="grid grid-2">
         <div class="card report">
-          <div class="illu">📅</div>
+          <div class="illu"><app-icon name="calendar" [size]="20" /></div>
           <h3>{{ 'reports.monthly' | t }}</h3>
           <p class="muted">{{ 'web.reports.monthlyDesc' | t }}</p>
           <div class="row controls">
             <app-month-picker [(month)]="month" />
             <button class="btn btn-primary" (click)="downloadMonth(month())" [disabled]="busy() === month()">
-              @if (busy() === month()) { <span class="spinner"></span> {{ 'web.reports.generating' | t }} } @else { ⬇ {{ 'reports.download' | t }} }
+              @if (busy() === month()) { <span class="spinner"></span> {{ 'web.reports.generating' | t }} } @else { <app-icon name="download" [size]="16" />{{ 'reports.download' | t }} }
             </button>
           </div>
         </div>
 
         <div class="card report yearly">
-          <div class="illu">🗓️</div>
+          <div class="illu"><app-icon name="calendar-range" [size]="20" /></div>
           <h3>{{ 'reports.annual' | t }}</h3>
           <p class="muted">{{ 'web.reports.annualDesc' | t }}</p>
           <div class="row controls">
@@ -41,7 +42,7 @@ import { I18nService, t, TranslatePipe } from '../../core/i18n';
               @for (y of years; track y) { <option [value]="y">{{ y }}</option> }
             </select>
             <button class="btn btn-primary" (click)="downloadYear(yearSel())" [disabled]="busy() === 'Y' + yearSel()">
-              @if (busy() === 'Y' + yearSel()) { <span class="spinner"></span> {{ 'web.reports.generating' | t }} } @else { ⬇ {{ 'reports.download' | t }} }
+              @if (busy() === 'Y' + yearSel()) { <span class="spinner"></span> {{ 'web.reports.generating' | t }} } @else { <app-icon name="download" [size]="16" />{{ 'reports.download' | t }} }
             </button>
           </div>
         </div>
@@ -52,7 +53,7 @@ import { I18nService, t, TranslatePipe } from '../../core/i18n';
         <div class="months">
           @for (m of lastMonths(); track m) {
             <button class="month-tile" (click)="downloadMonth(m)" [disabled]="busy() === m">
-              <span class="ico">{{ busy() === m ? '⏳' : '📄' }}</span>
+              <span class="ico">@if (busy() === m) { <span class="spinner"></span> } @else { <app-icon name="file-down" [size]="18" /> }</span>
               <b>{{ m | monthLabel: 'short' }}</b>
               <span class="muted small">{{ (m === current ? 'web.reports.inProgress' : 'web.reports.complete') | t }}</span>
             </button>
@@ -63,19 +64,18 @@ import { I18nService, t, TranslatePipe } from '../../core/i18n';
     </div>
   `,
   styles: [`
-    .report { display: grid; gap: 12px; position: relative; overflow: hidden; }
-    .report::after { content: ''; position: absolute; width: 200px; height: 200px; border-radius: 50%; background: var(--primary-soft); right: -60px; top: -60px; z-index: 0; }
-    .report > * { position: relative; z-index: 1; }
-    .yearly::after { background: var(--success-soft); }
-    .illu { font-size: 34px; }
-    .report h3 { font-size: 20px; }
+    .note { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .report { display: grid; gap: 10px; }
+    .illu { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-text); }
+    .report h3 { font-size: 17px; }
     .controls { flex-wrap: wrap; margin-top: 6px; }
     .year { width: 120px; }
-    .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-    .month-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; border-radius: 14px; border: 1px solid var(--border);
-      background: var(--surface-2); color: var(--text); font: inherit; cursor: pointer; transition: all .15s; }
-    .month-tile:hover:not(:disabled) { border-color: var(--primary); transform: translateY(-2px); }
-    .month-tile .ico { font-size: 20px; margin-bottom: 4px; }
+    .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+    .month-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); font: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
+    .month-tile b { font-weight: 600; }
+    .month-tile:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-2); }
+    .month-tile .ico { color: var(--text-muted); margin-bottom: 6px; height: 18px; display: flex; align-items: center; }
   `],
 })
 export class ReportsComponent implements OnInit {

@@ -65,12 +65,12 @@ export class ThemeService {
       const saved = localStorage.getItem('mm_theme');
       if (saved === 'light' || saved === 'dark') return saved;
     } catch {}
-    return 'dark'; // the neon theme is designed dark-first
+    return 'light';
   }
 
   private apply(theme: 'light' | 'dark') {
     document.documentElement.setAttribute('data-theme', theme);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#04050d' : '#eef0fb');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0f1211' : '#f6f7f5');
     Native.setStatusBarTheme(theme);
   }
 }

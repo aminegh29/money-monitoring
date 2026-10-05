@@ -5,84 +5,104 @@ import { ThemeService } from '../../core/ui.service';
 import { LogoComponent } from '../../shared/fx';
 import { CategoryNamePipe, TranslatePipe } from '../../core/i18n';
 import { LanguageSelectComponent } from '../../shared/language-select.component';
+import { IconComponent, IconName } from '../../shared/icon.component';
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, LogoComponent, TranslatePipe, CategoryNamePipe, LanguageSelectComponent],
+  imports: [RouterLink, LogoComponent, TranslatePipe, CategoryNamePipe, LanguageSelectComponent, IconComponent],
   template: `
     <header class="nav">
-      <a routerLink="/" class="brand"><app-logo [size]="38" /><span>Money<b class="gradient-text">Monitor</b></span></a>
-      <nav class="nav-links">
-        <button type="button" (click)="scrollTo('features')">{{ 'web.landing.featuresEyebrow' | t }}</button>
-        <button type="button" (click)="scrollTo('security')">{{ 'web.landing.securityEyebrow' | t }}</button>
-        <button type="button" (click)="scrollTo('faq')">{{ 'web.landing.faqEyebrow' | t }}</button>
-      </nav>
-      <div class="nav-actions">
-        <app-language-select />
-        <button class="icon-btn" (click)="theme.toggle()">{{ theme.theme() === 'light' ? '🌙' : '☀️' }}</button>
-        @if (auth.isLoggedIn()) {
-          <a [routerLink]="auth.homeRoute()" class="btn btn-primary btn-sm">{{ 'web.landing.openDashboard' | t }}</a>
-        } @else {
-          <a routerLink="/login" class="btn btn-ghost btn-sm">{{ 'auth.signIn' | t }}</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm">{{ 'web.landing.getStarted' | t }}</a>
-        }
+      <div class="nav-inner">
+        <a routerLink="/" class="brand"><app-logo [size]="28" /><span>Money Monitor</span></a>
+        <nav class="nav-links">
+          <button type="button" (click)="scrollTo('features')">{{ 'web.landing.featuresEyebrow' | t }}</button>
+          <button type="button" (click)="scrollTo('security')">{{ 'web.landing.securityEyebrow' | t }}</button>
+          <button type="button" (click)="scrollTo('faq')">{{ 'web.landing.faqEyebrow' | t }}</button>
+        </nav>
+        <div class="nav-actions">
+          <app-language-select class="hide-sm" />
+          <button class="icon-btn" (click)="theme.toggle()" [attr.aria-label]="(theme.theme() === 'light' ? 'web.nav.darkMode' : 'web.nav.lightMode') | t">
+            <app-icon [name]="theme.theme() === 'light' ? 'moon' : 'sun'" [size]="17" />
+          </button>
+          @if (auth.isLoggedIn()) {
+            <a [routerLink]="auth.homeRoute()" class="btn btn-primary btn-sm">{{ 'web.landing.openDashboard' | t }}</a>
+          } @else {
+            <a routerLink="/login" class="btn btn-ghost btn-sm hide-sm">{{ 'auth.signIn' | t }}</a>
+            <a routerLink="/register" class="btn btn-primary btn-sm">{{ 'web.landing.getStarted' | t }}</a>
+          }
+        </div>
       </div>
     </header>
 
     <section class="hero">
       <div class="hero-text">
-        <span class="pill"><i></i> {{ 'web.landing.pill' | t }}</span>
-        <h1>{{ 'web.landing.h1a' | t }}<br /><span class="gradient-text">{{ 'web.landing.h1b' | t }}<br />{{ 'web.landing.h1c' | t }}</span></h1>
-        <p>{{ 'web.landing.lead' | t }}</p>
+        <span class="pill">{{ 'web.landing.pill' | t }}</span>
+        <h1>{{ 'web.landing.h1a' | t }} <span class="accent">{{ 'web.landing.h1b' | t }} {{ 'web.landing.h1c' | t }}</span></h1>
+        <p class="lead">{{ 'web.landing.lead' | t }}</p>
         <div class="cta">
           <a routerLink="/register" class="btn btn-primary btn-lg">{{ 'web.landing.launch' | t }}</a>
           @if (auth.isLoggedIn()) {
-            <a [routerLink]="auth.homeRoute()" class="btn btn-ghost btn-lg">{{ 'web.landing.openDashboard' | t }}</a>
+            <a [routerLink]="auth.homeRoute()" class="btn btn-lg">{{ 'web.landing.openDashboard' | t }}</a>
           } @else {
-            <a routerLink="/login" class="btn btn-ghost btn-lg">{{ 'auth.signIn' | t }}</a>
+            <a routerLink="/login" class="btn btn-lg">{{ 'auth.signIn' | t }}</a>
           }
         </div>
-        <div class="stats">
-          <div><b class="gradient-text">⚡ 0s</b><span>{{ 'web.landing.statSync' | t }}</span></div>
-          <div><b class="gradient-text">✦ AI</b><span>Groq · Gemini · Ollama</span></div>
-          <div><b class="gradient-text">⤓ PDF</b><span>{{ 'web.landing.statPdf' | t }}</span></div>
-          <div><b class="gradient-text">🌐 5</b><span>{{ 'web.landing.statLangs' | t }}</span></div>
-        </div>
+        <ul class="trust">
+          <li><app-icon name="check" [size]="15" [stroke]="2.25" />{{ 'web.landing.statLangs' | t }}</li>
+          <li><app-icon name="check" [size]="15" [stroke]="2.25" />PDF · {{ 'web.landing.statPdf' | t }}</li>
+          <li><app-icon name="check" [size]="15" [stroke]="2.25" />{{ 'web.landing.synced' | t }}</li>
+        </ul>
       </div>
 
-      <div class="hero-visual">
-        <div class="orbit o1"></div><div class="orbit o2"></div>
-        <div class="phone">
-          <div class="notch"></div>
-          <div class="screen">
-            <div class="s-top"><span>9:41</span><span class="s-live">● LIVE</span></div>
-            <div class="s-label">{{ 'web.landing.mockLabel' | t }}</div>
-            <div class="s-amount">4,003<small>.00 MAD</small></div>
-            <div class="s-bars">
-              @for (h of bars; track $index) { <span [style.height.%]="h"></span> }
+      <!-- Product preview, drawn like the real dashboard -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="window">
+          <div class="window-bar"><i></i><i></i><i></i></div>
+          <div class="window-body">
+            <div class="pv-top">
+              <div>
+                <div class="pv-label">{{ 'web.landing.mockLabel' | t }}</div>
+                <div class="pv-amount">4,003.00 <small>MAD</small></div>
+              </div>
+              <div class="pv-rate"><b>27.6%</b><span>{{ 'dashboard.saved' | t }}</span></div>
             </div>
-            <div class="s-row"><span class="s-dot" style="--c:#10b981">🛒</span><span>{{ 'Groceries' | cat }}</span><b>-201.00</b></div>
-            <div class="s-row"><span class="s-dot" style="--c:#f97316">🍔</span><span>Burger</span><b>-62.00</b></div>
-            <div class="s-ai">{{ 'web.landing.mockAi' | t }}</div>
-            <div class="s-tab"><i></i><i></i><b>＋</b><i></i><i></i></div>
+            <div class="pv-kpis">
+              <div><span><i class="sw income"></i>{{ 'dashboard.income' | t }}</span><b>14,500.00</b></div>
+              <div><span><i class="sw spent"></i>{{ 'dashboard.spent' | t }}</span><b>10,497.00</b></div>
+            </div>
+            <div class="pv-chart">
+              @for (b of bars; track $index) {
+                <div class="pair"><span class="in" [style.height.%]="b[0]"></span><span class="out" [style.height.%]="b[1]"></span></div>
+              }
+            </div>
+            <div class="pv-list">
+              @for (tx of txs; track tx.label) {
+                <div class="pv-row">
+                  <span class="dot" [style.background]="tx.color + '1f'">{{ tx.icon }}</span>
+                  <span class="name">{{ tx.cat ? (tx.label | cat) : tx.label }}</span>
+                  <b>{{ tx.amount }}</b>
+                </div>
+              }
+            </div>
+            <div class="pv-tip"><app-icon name="lightbulb" [size]="15" /><span>{{ 'web.landing.mockAi' | t }}</span></div>
           </div>
         </div>
-        <div class="chip c1">{{ 'web.landing.chip1' | t }}</div>
-        <div class="chip c2">{{ 'web.landing.chip2' | t }}</div>
+        <div class="notice">
+          <span class="notice-icon"><app-icon name="bell" [size]="15" /></span>
+          <span>{{ 'web.landing.chip1' | t }}</span>
+        </div>
       </div>
     </section>
 
-    <section class="platforms">
-      <span>{{ 'web.landing.availableOn' | t }}</span><b>🌐 Web</b><b>📱 iOS</b><b>🤖 Android</b><span class="muted">{{ 'web.landing.synced' | t }}</span>
-    </section>
-
-    <section class="features" id="features">
-      <div class="eyebrow center">{{ 'web.landing.featuresEyebrow' | t }}</div>
-      <h2>{{ 'web.landing.featuresTitle' | t }}</h2>
-      <div class="grid grid-3">
+    <section class="section" id="features">
+      <div class="section-head">
+        <div class="eyebrow">{{ 'web.landing.featuresEyebrow' | t }}</div>
+        <h2>{{ 'web.landing.featuresTitle' | t }}</h2>
+      </div>
+      <div class="features">
         @for (f of features; track f.key) {
-          <div class="card feature interactive">
-            <div class="f-icon">{{ f.icon }}</div>
+          <div class="feature">
+            <div class="f-icon"><app-icon [name]="f.icon" [size]="19" /></div>
             <h3>{{ 'web.landing.' + f.key + 't' | t }}</h3>
             <p class="muted">{{ 'web.landing.' + f.key + 'd' | t }}</p>
           </div>
@@ -90,23 +110,31 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       </div>
     </section>
 
-    <section class="steps">
-      <div class="eyebrow center">{{ 'web.landing.stepsEyebrow' | t }}</div>
-      <h2>{{ 'web.landing.stepsTitle' | t }}</h2>
-      <div class="grid grid-3">
+    <section class="section steps-section">
+      <div class="section-head">
+        <div class="eyebrow">{{ 'web.landing.stepsEyebrow' | t }}</div>
+        <h2>{{ 'web.landing.stepsTitle' | t }}</h2>
+      </div>
+      <div class="steps">
         @for (s of steps; track s.n) {
-          <div class="step card"><span class="num">{{ s.n }}</span><h3>{{ 'web.landing.' + s.key + 't' | t }}</h3><p class="muted">{{ 'web.landing.' + s.key + 'd' | t }}</p></div>
+          <div class="step">
+            <span class="num">{{ s.n }}</span>
+            <h3>{{ 'web.landing.' + s.key + 't' | t }}</h3>
+            <p class="muted">{{ 'web.landing.' + s.key + 'd' | t }}</p>
+          </div>
         }
       </div>
     </section>
 
-    <section class="security" id="security">
-      <div class="eyebrow center">{{ 'web.landing.securityEyebrow' | t }}</div>
-      <h2>{{ 'web.landing.securityTitle' | t }}</h2>
-      <div class="grid grid-3">
+    <section class="section" id="security">
+      <div class="section-head">
+        <div class="eyebrow">{{ 'web.landing.securityEyebrow' | t }}</div>
+        <h2>{{ 'web.landing.securityTitle' | t }}</h2>
+      </div>
+      <div class="security">
         @for (s of security; track s.key) {
-          <div class="card sec">
-            <div class="sec-icon">{{ s.icon }}</div>
+          <div class="sec">
+            <div class="sec-icon"><app-icon [name]="s.icon" [size]="18" /></div>
             <div>
               <h3>{{ 'web.landing.' + s.key + 't' | t }}</h3>
               <p class="muted">{{ 'web.landing.' + s.key + 'd' | t }}</p>
@@ -116,13 +144,15 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
       </div>
     </section>
 
-    <section class="faq" id="faq">
-      <div class="eyebrow center">{{ 'web.landing.faqEyebrow' | t }}</div>
-      <h2>{{ 'web.landing.faqTitle' | t }}</h2>
+    <section class="section faq" id="faq">
+      <div class="section-head">
+        <div class="eyebrow">{{ 'web.landing.faqEyebrow' | t }}</div>
+        <h2>{{ 'web.landing.faqTitle' | t }}</h2>
+      </div>
       <div class="faq-list">
         @for (q of faq; track q) {
-          <details class="card">
-            <summary>{{ 'web.landing.q' + q | t }}</summary>
+          <details>
+            <summary>{{ 'web.landing.q' + q | t }}<app-icon class="chev" name="chevron-down" [size]="18" /></summary>
             <p class="muted">{{ 'web.landing.a' + q | t }}</p>
           </details>
         }
@@ -130,7 +160,6 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
     </section>
 
     <section class="final-cta">
-      <div class="final-glow"></div>
       <h2>{{ 'web.landing.finalTitle' | t }}</h2>
       <p>{{ 'web.landing.finalText' | t }}</p>
       <a routerLink="/register" class="btn btn-lg cta-white">{{ 'web.landing.finalCta' | t }}</a>
@@ -139,7 +168,7 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
     <footer class="site-footer">
       <div class="f-grid">
         <div class="f-brand">
-          <a routerLink="/" class="brand"><app-logo [size]="32" /><span>Money<b class="gradient-text">Monitor</b></span></a>
+          <a routerLink="/" class="brand"><app-logo [size]="26" /><span>Money Monitor</span></a>
           <p class="muted small">{{ 'web.landing.footerTagline' | t }}</p>
         </div>
         <div class="f-col">
@@ -160,114 +189,130 @@ import { LanguageSelectComponent } from '../../shared/language-select.component'
   `,
   styles: [`
     :host { display: block; overflow-x: hidden; }
-    .nav { display: flex; justify-content: space-between; align-items: center; padding: calc(16px + var(--safe-top)) 6vw 16px; position: sticky; top: 0; z-index: 10;
-      background: color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid var(--border); }
-    .brand { display: flex; align-items: center; gap: 11px; font-family: var(--font-display); font-size: 20px; color: var(--text); }
+
+    /* Navigation */
+    .nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--border);
+      padding-top: var(--safe-top); }
+    .nav-inner { max-width: 1180px; margin: 0 auto; height: 60px; padding: 0 24px; display: flex; align-items: center; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; color: var(--text); white-space: nowrap; }
     .brand:hover { text-decoration: none; }
-    .nav-actions { display: flex; gap: 10px; align-items: center; }
-
-    .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 50px; align-items: center; padding: 70px 6vw 80px; max-width: 1400px; margin: 0 auto; }
-    .pill { display: inline-flex; align-items: center; gap: 10px; background: var(--surface-2); border: 1px solid var(--border-strong); font-size: 13px; font-weight: 600; padding: 7px 15px; border-radius: 999px; }
-    .pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); }
-    .hero h1 { font-size: clamp(48px, 7vw, 92px); font-weight: 700; letter-spacing: -.055em; margin: 24px 0; line-height: .98; }
-    .hero p { font-size: 18px; color: var(--text-muted); max-width: 560px; line-height: 1.65; }
-    .cta { display: flex; gap: 12px; margin: 34px 0 40px; flex-wrap: wrap; }
-    .stats { display: flex; gap: 36px; flex-wrap: wrap; }
-    .stats div { display: flex; flex-direction: column; gap: 2px; }
-    .stats b { font-family: var(--font-display); font-size: 22px; }
-    .stats span { font-size: 13px; color: var(--text-muted); }
-
-    .hero-visual { position: relative; height: 600px; display: grid; place-items: center; perspective: 1400px; }
-    .orbit { position: absolute; border-radius: 50%; border: 1px solid var(--border-strong); }
-    .o1 { width: 520px; height: 520px; animation: spin 40s linear infinite; }
-    .o2 { width: 380px; height: 380px; border-style: dashed; animation: spin 26s linear infinite reverse; }
-    .o1::after { content: ''; position: absolute; top: 50%; left: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
-    .phone { position: relative; width: 290px; height: 590px; border-radius: 48px; padding: 12px; background: linear-gradient(145deg, #2a2f4a, #0b0d1c);
-      box-shadow: 0 0 0 2px rgba(255,255,255,.08), 0 60px 120px -30px rgba(0,0,0,.9), 0 0 90px rgba(139,92,246,.4);
-      transform: rotateY(-16deg) rotateX(6deg); animation: float 8s ease-in-out infinite; }
-    @keyframes float { 50% { transform: rotateY(-8deg) rotateX(3deg) translateY(-14px); } }
-    .notch { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 92px; height: 26px; border-radius: 20px; background: #000; z-index: 2; }
-    .screen { height: 100%; border-radius: 38px; overflow: hidden; padding: 50px 18px 16px; color: #eef1ff; position: relative;
-      background: radial-gradient(80% 50% at 20% 10%, rgba(34,211,238,.35), transparent 70%), radial-gradient(70% 50% at 90% 60%, rgba(232,121,249,.3), transparent 70%), #05060f; }
-    .s-top { position: absolute; top: 18px; left: 26px; right: 26px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
-    .s-live { color: #34f5b5; font-size: 10px; letter-spacing: .1em; }
-    .s-label { font-size: 9.5px; letter-spacing: .18em; color: #8b93b8; margin-top: 8px; }
-    .s-amount { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -.04em; background: linear-gradient(120deg, #fff, #b9f5ff 60%, #e2c8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .s-amount small { font-size: 14px; -webkit-text-fill-color: #8b93b8; }
-    .s-bars { display: flex; align-items: flex-end; gap: 5px; height: 110px; margin: 14px 0 18px; }
-    .s-bars span { flex: 1; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #8b5cf6, rgba(34,211,238,.15)); box-shadow: 0 0 10px rgba(139,92,246,.5); }
-    .s-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07); margin-bottom: 8px; font-size: 13px; }
-    .s-row span:nth-child(2) { flex: 1; } .s-row b { font-family: var(--font-display); }
-    .s-dot { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 25%, transparent); }
-    .s-ai { margin-top: 12px; font-size: 12px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(120deg, rgba(34,211,238,.18), rgba(139,92,246,.22), rgba(232,121,249,.18)); border: 1px solid rgba(255,255,255,.12); }
-    .s-tab { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 52px; border-radius: 20px; background: rgba(20,22,40,.85); border: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: space-around; }
-    .s-tab i { width: 18px; height: 4px; border-radius: 4px; background: #5d6488; }
-    .s-tab b { width: 42px; height: 42px; margin-top: -24px; border-radius: 15px; display: grid; place-items: center; background: var(--gradient); box-shadow: 0 0 20px rgba(139,92,246,.8); font-weight: 400; }
-    .chip { position: absolute; padding: 11px 16px; border-radius: 16px; font-size: 13px; font-weight: 600; background: var(--surface-solid); border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); animation: bob 6s ease-in-out infinite; white-space: nowrap; }
-    .c1 { bottom: 34%; left: -2%; } .c2 { bottom: 14%; right: 0; animation-delay: -3s; }
-    @keyframes bob { 50% { transform: translateY(-12px); } }
-
-    .platforms { display: flex; justify-content: center; align-items: center; gap: 22px; flex-wrap: wrap; padding: 22px 6vw; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      font-family: var(--font-display); background: var(--surface); }
-    .platforms b { font-size: 17px; } .platforms span { color: var(--text-muted); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
-
-    section h2 { font-size: clamp(30px, 4vw, 46px); letter-spacing: -.04em; text-align: center; margin: 10px 0 44px; }
-    .center { text-align: center; }
-    .features, .steps { padding: 90px 6vw 20px; max-width: 1300px; margin: 0 auto; }
-    .f-icon { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; font-size: 24px; margin-bottom: 18px; background: var(--gradient-soft); border: 1px solid var(--border-strong); box-shadow: 0 0 24px rgba(139,92,246,.25); }
-    .feature h3 { font-size: 18px; margin-bottom: 8px; }
-    .step { text-align: start; }
-    .step .num { display: inline-block; font-size: 44px; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1; margin-bottom: 14px; }
-    .step h3 { margin-bottom: 8px; }
-
-    .final-cta { position: relative; overflow: hidden; margin: 90px 6vw 50px; padding: 80px 30px; border-radius: 36px; text-align: center; border: 1px solid var(--border-strong); background: var(--surface); }
-    .final-glow { position: absolute; inset: 0; background: radial-gradient(50% 80% at 20% 0%, rgba(34,211,238,.35), transparent 70%), radial-gradient(50% 80% at 80% 100%, rgba(232,121,249,.35), transparent 70%), radial-gradient(40% 60% at 50% 50%, rgba(139,92,246,.3), transparent 70%); }
-    .final-cta > *:not(.final-glow) { position: relative; }
-    .final-cta h2 { margin-bottom: 12px; }
-    .final-cta p { color: var(--text-muted); margin-bottom: 30px; font-size: 17px; }
-    .cta-white { background: #fff; color: #1e1b4b; border: none; box-shadow: 0 0 40px rgba(255,255,255,.35); }
-
-    .nav-links { display: flex; gap: 4px; }
-    .nav-links button { background: none; border: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-muted); padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+    .nav-links { display: flex; gap: 2px; }
+    .nav-links button { background: none; border: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-muted); padding: 6px 10px; border-radius: 7px; cursor: pointer; }
     .nav-links button:hover { color: var(--text); background: var(--surface-2); }
+    .nav-actions { margin-inline-start: auto; display: flex; gap: 6px; align-items: center; }
 
-    .security, .faq { padding: 90px 6vw 20px; max-width: 1300px; margin: 0 auto; }
-    .sec { display: flex; gap: 16px; align-items: flex-start; }
-    .sec-icon { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 21px; background: var(--success-soft); border: 1px solid var(--border-strong); }
-    .sec h3 { font-size: 17px; margin-bottom: 6px; }
-    .faq-list { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
-    .faq details { padding: 0; }
-    .faq summary { list-style: none; cursor: pointer; padding: 20px 24px; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    /* Hero */
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; padding: 72px 24px 80px; max-width: 1180px; margin: 0 auto; }
+    .pill { display: inline-block; font-size: 13px; font-weight: 500; color: var(--primary-text); background: var(--primary-soft); padding: 4px 10px; border-radius: 999px; }
+    .hero h1 { font-size: clamp(36px, 4.6vw, 54px); font-weight: 600; letter-spacing: -.035em; line-height: 1.08; margin: 18px 0 18px; }
+    .hero h1 .accent { color: var(--primary-text); }
+    .lead { font-size: 17.5px; color: var(--text-muted); max-width: 540px; line-height: 1.65; }
+    .cta { display: flex; gap: 10px; margin: 30px 0 26px; flex-wrap: wrap; }
+    .trust { list-style: none; padding: 0; margin: 0; display: flex; gap: 8px 20px; flex-wrap: wrap; }
+    .trust li { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-muted); }
+    .trust app-icon { color: var(--primary-text); }
+
+    .hero-visual { position: relative; padding: 0 0 28px; }
+    .window { border-radius: 14px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg); overflow: hidden; }
+    .window-bar { display: flex; gap: 6px; padding: 11px 14px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+    .window-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
+    .window-body { padding: 20px 22px 22px; display: grid; gap: 16px; }
+    .pv-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .pv-label { font-size: 12.5px; color: var(--text-muted); font-weight: 500; }
+    .pv-amount { font-size: 30px; font-weight: 600; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+    .pv-amount small { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .pv-rate { text-align: end; display: grid; }
+    .pv-rate b { font-size: 18px; font-weight: 600; color: var(--primary-text); }
+    .pv-rate span { font-size: 12px; color: var(--text-muted); }
+    .pv-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pv-kpis div { display: grid; gap: 2px; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--border); }
+    .pv-kpis span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .pv-kpis b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sw { width: 8px; height: 8px; border-radius: 2px; } .sw.income { background: var(--chart-1); } .sw.spent { background: var(--border-strong); }
+    .pv-chart { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; height: 96px; padding: 0 2px; border-bottom: 1px solid var(--border); }
+    .pair { flex: 1; display: flex; align-items: flex-end; gap: 3px; height: 100%; }
+    .pair span { flex: 1; border-radius: 3px 3px 0 0; }
+    .pair .in { background: var(--chart-1); } .pair .out { background: var(--border-strong); }
+    .pv-list { display: grid; }
+    .pv-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+    .pv-row:last-child { border-bottom: none; }
+    .pv-row .dot { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font-size: 14px; }
+    .pv-row .name { flex: 1; }
+    .pv-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .pv-tip { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; padding: 10px 12px; border-radius: 9px; background: var(--primary-soft); color: var(--text); }
+    .pv-tip app-icon { color: var(--primary-text); margin-top: 1px; }
+    .notice { position: absolute; inset-inline-start: -24px; bottom: 0; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px;
+      background: var(--surface-solid); border: 1px solid var(--border); box-shadow: var(--shadow-lg); font-size: 13.5px; font-weight: 500; }
+    .notice-icon { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; background: var(--warning-soft); color: var(--warning); }
+
+    /* Sections */
+    .section { padding: 88px 24px 8px; max-width: 1180px; margin: 0 auto; }
+    .section-head { max-width: 640px; margin-bottom: 40px; }
+    .section-head h2 { font-size: clamp(26px, 3.2vw, 36px); font-weight: 600; letter-spacing: -.03em; margin-top: 8px; }
+    .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+    .feature { padding: 26px; border-inline-end: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .feature:nth-child(3n) { border-inline-end: none; }
+    .feature:nth-last-child(-n + 3) { border-bottom: none; }
+    .f-icon { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 16px; background: var(--primary-soft); color: var(--primary-text); }
+    .feature h3, .step h3, .sec h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .feature p, .step p, .sec p { line-height: 1.6; font-size: 14.5px; }
+
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+    .step { border-top: 2px solid var(--border); padding-top: 20px; }
+    .step .num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 600; margin-bottom: 14px;
+      background: var(--primary); color: var(--on-primary); }
+
+    .security { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .sec { display: flex; gap: 14px; align-items: flex-start; padding: 22px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); }
+    .sec-icon { flex: none; width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; background: var(--surface-2); color: var(--text); }
+
+    .faq .section-head { margin-inline: auto; text-align: center; }
+    .faq-list { max-width: 760px; margin: 0 auto; border-top: 1px solid var(--border); }
+    .faq details { border-bottom: 1px solid var(--border); }
+    .faq summary { list-style: none; cursor: pointer; padding: 20px 4px; font-weight: 500; font-size: 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
     .faq summary::-webkit-details-marker { display: none; }
-    .faq summary::after { content: '+'; font-size: 22px; font-weight: 400; color: var(--primary-text); transition: transform .2s; }
-    .faq details[open] summary::after { transform: rotate(45deg); }
-    .faq details p { padding: 0 24px 20px; line-height: 1.65; }
+    .faq summary .chev { color: var(--text-muted); transition: transform .2s; }
+    .faq details[open] summary .chev { transform: rotate(180deg); }
+    .faq details p { padding: 0 4px 20px; line-height: 1.65; max-width: 680px; }
 
-    .site-footer { border-top: 1px solid var(--border); background: var(--surface); padding: 50px 6vw calc(30px + var(--safe-bottom)); }
-    .f-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; max-width: 1300px; margin: 0 auto; }
-    .f-brand p { margin-top: 14px; max-width: 340px; line-height: 1.6; }
+    .final-cta { margin: 96px auto 64px; max-width: 1132px; padding: 56px 32px; border-radius: 16px; text-align: center; background: #0d4a37; color: #fff; }
+    .final-cta h2 { font-size: clamp(26px, 3.2vw, 34px); font-weight: 600; letter-spacing: -.025em; margin-bottom: 10px; }
+    .final-cta p { color: rgba(255,255,255,.75); margin-bottom: 26px; font-size: 16.5px; }
+    .cta-white { background: #fff; color: #0d4a37; border-color: #fff; }
+    .cta-white:hover:not(:disabled) { background: #eef5f1; }
+
+    .site-footer { border-top: 1px solid var(--border); padding: 48px 24px calc(28px + var(--safe-bottom)); }
+    .f-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; max-width: 1180px; margin: 0 auto; }
+    .f-brand p { margin-top: 12px; max-width: 340px; line-height: 1.6; }
     .f-col { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
-    .f-col h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: 4px; }
-    .f-col a, .f-col button { background: none; border: 0; padding: 0; font: inherit; font-size: 14px; color: var(--text); cursor: pointer; }
-    .f-col a:hover, .f-col button:hover { color: var(--primary-text); text-decoration: none; }
-    .f-bottom { max-width: 1300px; margin: 36px auto 0; padding-top: 22px; border-top: 1px solid var(--border); text-align: center; }
+    .f-col h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .f-col a, .f-col button { background: none; border: 0; padding: 0; font: inherit; font-size: 14px; color: var(--text-muted); cursor: pointer; }
+    .f-col a:hover, .f-col button:hover { color: var(--text); text-decoration: none; }
+    .f-bottom { max-width: 1180px; margin: 36px auto 0; padding-top: 20px; border-top: 1px solid var(--border); }
 
     @media (max-width: 1000px) {
       .nav-links { display: none; }
-      .hero { grid-template-columns: 1fr; padding-top: 40px; }
-      .hero-visual { height: 560px; }
+      .hero { grid-template-columns: 1fr; gap: 48px; padding-top: 48px; }
+      .notice { inset-inline-start: 12px; }
+      .features { grid-template-columns: 1fr 1fr; }
+      .feature:nth-child(3n) { border-inline-end: 1px solid var(--border); }
+      .feature:nth-child(2n) { border-inline-end: none; }
+      .feature:nth-last-child(-n + 3) { border-bottom: 1px solid var(--border); }
+      .feature:nth-last-child(-n + 2) { border-bottom: none; }
+      .steps, .security { grid-template-columns: 1fr; gap: 16px; }
     }
-    @media (max-width: 560px) {
-      .nav { padding-inline: 16px; }
-      .hero { padding: 30px 16px 40px; }
-      .hero-visual { height: 520px; transform: scale(.85); }
-      .o1 { width: 380px; height: 380px; } .o2 { width: 300px; height: 300px; }
-      .chip { display: none; }
-      .features, .steps, .security, .faq { padding: 60px 16px 10px; }
+    @media (max-width: 600px) {
+      .nav-inner { padding: 0 16px; gap: 12px; }
+      .hide-sm { display: none; }
+      .hero { padding: 36px 16px 56px; }
+      .section { padding: 64px 16px 8px; }
+      .features { grid-template-columns: 1fr; }
+      .feature, .feature:nth-child(n) { border-inline-end: none; border-bottom: 1px solid var(--border); }
+      .feature:last-child { border-bottom: none; }
+      .final-cta { margin: 64px 16px 40px; padding: 40px 20px; }
       .f-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
       .f-brand { grid-column: 1 / -1; }
       .site-footer { padding-inline: 16px; }
-      .final-cta { margin: 60px 16px 40px; padding: 50px 20px; }
     }
   `],
 })
@@ -275,25 +320,31 @@ export class LandingComponent {
   readonly auth = inject(AuthService);
   readonly theme = inject(ThemeService);
   readonly year = new Date().getFullYear();
-  readonly bars = [40, 62, 48, 80, 55, 92, 66, 45, 74, 58];
+  /** Income / expense bar heights (%) for the preview chart. */
+  readonly bars = [[62, 48], [70, 55], [58, 61], [75, 50], [68, 57], [82, 60]];
+  readonly txs = [
+    { icon: '🛒', color: '#10b981', label: 'Groceries', cat: true, amount: '−201.00' },
+    { icon: '🍔', color: '#f97316', label: 'Restaurants & Cafés', cat: true, amount: '−62.00' },
+    { icon: '🚗', color: '#f59e0b', label: 'Transport', cat: true, amount: '−145.50' },
+  ];
   // Titles and texts are web.landing.<key>t / <key>d translation keys.
-  readonly features = [
-    { icon: '⚡', key: 'f1' },
-    { icon: '📊', key: 'f2' },
-    { icon: '✦', key: 'f3' },
-    { icon: '🎯', key: 'f4' },
-    { icon: '⤓', key: 'f5' },
-    { icon: '🌐', key: 'f6' },
+  readonly features: { icon: IconName; key: string }[] = [
+    { icon: 'refresh-cw', key: 'f1' },
+    { icon: 'gauge', key: 'f2' },
+    { icon: 'lightbulb', key: 'f3' },
+    { icon: 'target', key: 'f4' },
+    { icon: 'file-text', key: 'f5' },
+    { icon: 'globe', key: 'f6' },
   ];
   readonly steps = [
-    { n: '01', key: 's1' },
-    { n: '02', key: 's2' },
-    { n: '03', key: 's3' },
+    { n: '1', key: 's1' },
+    { n: '2', key: 's2' },
+    { n: '3', key: 's3' },
   ];
-  readonly security = [
-    { icon: '🔒', key: 'sec1' },
-    { icon: '🏦', key: 'sec2' },
-    { icon: '🗑️', key: 'sec3' },
+  readonly security: { icon: IconName; key: string }[] = [
+    { icon: 'lock', key: 'sec1' },
+    { icon: 'landmark', key: 'sec2' },
+    { icon: 'trash', key: 'sec3' },
   ];
   readonly faq = [1, 2, 3, 4, 5];
 
